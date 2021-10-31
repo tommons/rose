@@ -3,50 +3,17 @@
 
 #include <Adafruit_NeoPixel.h>
 #include <Servo.h>
+#include <elapsedMillis.h>
+
 #include "led_functions.h"
-
-#define SERVO_MAX_ANGLE 120
-#define SERVO_MIN_ANGLE 0
-#define SERVO_PW_MIN    700
-#define SERVO_PW_MAX    1900
-#define SERVO_INITIAL_ANGLE SERVO_MIN_ANGLE
-
-#define DELAY_MS 10
-
-Servo servo1;
-Servo servo2;
-Servo servo3;
-Servo servo4;
-
-// Servos
-#define PIN_SERVO1      2
-#define PIN_SERVO2      3
-#define PIN_SERVO3      4
-#define PIN_SERVO4      5
-
-// LEDs
-#define PIN_LED_OUTER_RING   8
-#define PIN_LED_INNER_RING   9
-#define LED_COUNT_OUTER_RING 5
-#define LED_COUNT_INNER_RING 24
-
-// Inputs
-#define PIN_RC_CH6 7
-#define PIN_SWITCH 6
-
-Adafruit_NeoPixel led_outer_ring(LED_COUNT_OUTER_RING, PIN_LED_OUTER_RING, NEO_GRB + NEO_KHZ800);
-Adafruit_NeoPixel led_inner_ring(LED_COUNT_INNER_RING, PIN_LED_INNER_RING, NEO_GRB + NEO_KHZ800);
+#include "setup.h"
+#include "servo_functions.h"
 
 uint32_t state   = 0; // state machine value for sequencing instructions
 
 #define MAX_NUM_STATES 20
 #define NUM_STATES 7
 uint32_t state_counter[MAX_NUM_STATES] = {0};
-
-uint32_t servoMap( const uint32_t angle )
-{
-  return map(angle, SERVO_MIN_ANGLE, SERVO_MAX_ANGLE, 0, 180 );
-}
 
 void resetStateCounters()
 {
@@ -95,12 +62,8 @@ void state1()
 {
 	const uint8_t stateIdx = 1;
 	
-	const uint32_t fadeTime_ms = 5000;
-	const uint32_t fadeupcount = fadeTime_ms / DELAY_MS;
+	fadeInRed( state_counter[stateIdx] );
 
-	fadeIn( led_outer_ring, state_counter[stateIdx], 0, 255, 255, fadeupcount ); // RED
-	fadeIn( led_inner_ring, state_counter[stateIdx], 0, 0, 255, fadeupcount ); // WHITE
-	  
 	state_counter[stateIdx]++;
 }
 
@@ -108,11 +71,7 @@ void state2()
 {
 	const uint8_t stateIdx = 2;
 	
-	const uint32_t fadeTime_ms = 3000;
-	const uint32_t fadeoutcount = fadeTime_ms / DELAY_MS;
-
-	fadeOut( led_outer_ring, state_counter[stateIdx], 65535*306/360, 255, 255, fadeoutcount ); // PURPLE
-	fadeOut( led_inner_ring, state_counter[stateIdx], 0, 0, 255, fadeoutcount ); // WHITE
+	fadeOutPurple( state_counter[stateIdx] );
   
 	state_counter[stateIdx]++;
 }
@@ -121,32 +80,7 @@ void state3()
 {
 	const uint8_t stateIdx = 3;
 	
-	const uint32_t chaseInterval_ms = 50;
-	const uint32_t chaseInteralCount = chaseInterval_ms / DELAY_MS;
-	const uint8_t chaseOffset = 3;
-	if( state_counter[stateIdx] == 0 )
-	{
-		chaseCounter1 = 0;
-		chaseCounter2 = 0;
-	}
-	
-	chase( led_outer_ring, 
-			state_counter[stateIdx], 
-			led_outer_ring.Color(0,255,0), // green
-			led_outer_ring.Color(255,0,0), //red
-			chaseInteralCount,
-			chaseOffset,
-			chaseCounter1,
-			false);
-  
-  	chase( led_inner_ring, 
-			state_counter[stateIdx], 
-			led_outer_ring.Color(64,64,64), // dimmer white
-			led_outer_ring.Color(255,255,255), // white
-			chaseInteralCount,
-			chaseOffset,
-			chaseCounter2,
-			true );
+	chaseBackward(state_counter[stateIdx]);
 			
 	state_counter[stateIdx]++;
 }
@@ -155,31 +89,8 @@ void state4()
 {
 	const uint8_t stateIdx = 4;
 	
-	const uint32_t wipeInterval_ms = 50;
-	const uint32_t wipeInteralCount = wipeInterval_ms / DELAY_MS;
-	const uint8_t wipeLength = 5;
-	if( state_counter[stateIdx] == 0 )
-	{
-		wipeCounter1 = 0;
-		wipeCounter2 = 0;
-	}
-	
-	wipe( led_outer_ring, 
-			state_counter[stateIdx], 
-			0, 255, 255, // RED
-			wipeInteralCount,
-			wipeLength,
-			wipeCounter1,
-			true );
-  
-	wipe( led_inner_ring, 
-			state_counter[stateIdx], 
-			0, 255, 255, // RED
-			wipeInteralCount,
-			wipeLength,
-			wipeCounter2,
-			true );
-			
+	wipeRed(state_counter[stateIdx], true); // forward
+				
 	state_counter[stateIdx]++;
 }
 
@@ -187,30 +98,7 @@ void state5()
 {
 	const uint8_t stateIdx = 5;
 	
-	const uint32_t wipeInterval_ms = 50;
-	const uint32_t wipeInteralCount = wipeInterval_ms / DELAY_MS;
-	const uint8_t wipeLength = 5;
-	if( state_counter[stateIdx] == 0 )
-	{
-		wipeCounter1 = 0;
-		wipeCounter2 = 0;
-	}
-	
-	wipe( led_outer_ring, 
-			state_counter[stateIdx], 
-			0, 255, 255, // RED
-			wipeInteralCount,
-			wipeLength,
-			wipeCounter1,
-			false );
-  
-	wipe( led_inner_ring, 
-			state_counter[stateIdx], 
-			0, 255, 255, // RED
-			wipeInteralCount,
-			wipeLength,
-			wipeCounter2,
-			false );
+	wipeRed(state_counter[stateIdx], false); // backward
 			
 	state_counter[stateIdx]++;
 }

@@ -1,29 +1,31 @@
 #include <Servo.h>
 #include <Adafruit_NeoPixel.h>
+#include "setup.h"
 #include "states.h"
 #include "led_functions.h"
+#include "servo_functions.h"
 #include <elapsedMillis.h>
 
 uint32_t ch6_cur, ch6_prev, ch6_filt;
-uint32_t buttonState 						= LOW;
+uint32_t buttonState 							= LOW;
 
-const uint32_t SWITCH_ON_HIGH_THRESHOLD    	= 1800;
-const uint32_t SWITCH_OFF_LOW_THRESHOLD    	= 1100;
-const uint32_t RC_CONNECTED_THRESHOLD      	= 900;
-boolean drop_petal              			= false;
-uint32_t drop_on_count               		= 0;
-uint32_t drop_off_count              		= 0;
+const uint32_t SWITCH_ON_HIGH_THRESHOLD    		= 1800;
+const uint32_t SWITCH_OFF_LOW_THRESHOLD    		= 1100;
+const uint32_t RC_CONNECTED_THRESHOLD      		= 900;
+boolean drop_petal              				= false;
+uint32_t drop_on_count               			= 0;
+uint32_t drop_off_count              			= 0;
 const uint32_t DROP_OFF_COUNT_THRESHOLD1_ms   	= 1000;
 const uint32_t DROP_ON_COUNT_THRESHOLD1_ms    	= 500;
 const uint32_t DROP_OFF_COUNT_THRESHOLD2_ms   	= 500;
 // 0=waiting for very long off
 // 1=waiting for long on
 // 2=waiting for long off
-uint32_t drop_state                  = 0; 
+uint32_t drop_state                  			= 0; 
 elapsedMillis drop_off_elapsed_ms;
 elapsedMillis drop_on_elapsed_ms;
 elapsedMillis blink_ms;
-int blinkState = LOW;
+int blinkState 									= LOW;
 
 uint32_t counter = 0;
 
@@ -48,7 +50,6 @@ void setup() {
 	state_reset();
 
 	Serial.begin(9600); // Pour a bowl of Serial
-
 }
 
 void loop() {
