@@ -78,4 +78,59 @@ void chase( Adafruit_NeoPixel & led,
 	}
 }
 
+uint32_t wipeCounter1 = 0;
+uint32_t wipeCounter2 = 0;
+
+void wipe( Adafruit_NeoPixel & led, 
+			const uint32_t & state_counter, 
+			const uint16_t h, 
+			const uint8_t s, 
+			const uint8_t v,
+			const uint32_t interval,
+			const uint8_t wipeLength,
+			uint32_t & wipeCounter,
+			boolean forwardDirection )
+{
+	if( state_counter % interval == 0 )
+	{
+		led.clear();
+		const uint32_t numPixels = led.numPixels();
+		
+		uint32_t wipeStart 	= wipeCounter % numPixels;
+		if( forwardDirection == false )
+		{
+			wipeStart = (numPixels-1) - wipeStart;
+		}
+		
+		int pixel = 0;
+		
+		for( uint32_t i=0; i < wipeLength; i++ )
+		{
+			// calculate pixel index behind the starting index
+			if( forwardDirection == true )
+				pixel = wipeStart - i;
+			else
+				pixel = wipeStart + i;
+			
+			if( pixel < 0 )
+			{
+				pixel += numPixels;
+			}
+			else if( pixel >= numPixels )
+			{
+				pixel -= numPixels;
+			}
+			
+			// dim pixel in relation to how far behind the front
+			uint8_t v1 = v / (i+1);
+			
+			led.setPixelColor(pixel, led.gamma32(led.ColorHSV(h, s, v1)));
+		}
+						
+		led.show();	
+
+		wipeCounter++;
+	}
+}
+
 #endif

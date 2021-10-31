@@ -11,7 +11,7 @@
 #define SERVO_PW_MAX    1900
 #define SERVO_INITIAL_ANGLE SERVO_MIN_ANGLE
 
-#define DELAY_MS 50
+#define DELAY_MS 10
 
 Servo servo1;
 Servo servo2;
@@ -108,7 +108,7 @@ void state2()
 {
 	const uint8_t stateIdx = 2;
 	
-	const uint32_t fadeTime_ms = 5000;
+	const uint32_t fadeTime_ms = 3000;
 	const uint32_t fadeoutcount = fadeTime_ms / DELAY_MS;
 
 	fadeOut( led_outer_ring, state_counter[stateIdx], 65535*306/360, 255, 255, fadeoutcount ); // PURPLE
@@ -121,7 +121,7 @@ void state3()
 {
 	const uint8_t stateIdx = 3;
 	
-	const uint32_t chaseInterval_ms = 500;
+	const uint32_t chaseInterval_ms = 50;
 	const uint32_t chaseInteralCount = chaseInterval_ms / DELAY_MS;
 	const uint8_t chaseOffset = 3;
 	if( state_counter[stateIdx] == 0 )
@@ -155,9 +155,31 @@ void state4()
 {
 	const uint8_t stateIdx = 4;
 	
+	const uint32_t wipeInterval_ms = 50;
+	const uint32_t wipeInteralCount = wipeInterval_ms / DELAY_MS;
+	const uint8_t wipeLength = 5;
 	if( state_counter[stateIdx] == 0 )
-		servo2.write( servoMap( SERVO_MAX_ANGLE ) );
+	{
+		wipeCounter1 = 0;
+		wipeCounter2 = 0;
+	}
+	
+	wipe( led_outer_ring, 
+			state_counter[stateIdx], 
+			0, 255, 255, // RED
+			wipeInteralCount,
+			wipeLength,
+			wipeCounter1,
+			true );
   
+	wipe( led_inner_ring, 
+			state_counter[stateIdx], 
+			0, 255, 255, // RED
+			wipeInteralCount,
+			wipeLength,
+			wipeCounter2,
+			true );
+			
 	state_counter[stateIdx]++;
 }
 
@@ -165,9 +187,31 @@ void state5()
 {
 	const uint8_t stateIdx = 5;
 	
+	const uint32_t wipeInterval_ms = 50;
+	const uint32_t wipeInteralCount = wipeInterval_ms / DELAY_MS;
+	const uint8_t wipeLength = 5;
 	if( state_counter[stateIdx] == 0 )
-		servo3.write( servoMap( SERVO_MAX_ANGLE ) );
+	{
+		wipeCounter1 = 0;
+		wipeCounter2 = 0;
+	}
+	
+	wipe( led_outer_ring, 
+			state_counter[stateIdx], 
+			0, 255, 255, // RED
+			wipeInteralCount,
+			wipeLength,
+			wipeCounter1,
+			false );
   
+	wipe( led_inner_ring, 
+			state_counter[stateIdx], 
+			0, 255, 255, // RED
+			wipeInteralCount,
+			wipeLength,
+			wipeCounter2,
+			false );
+			
 	state_counter[stateIdx]++;
 }
 
