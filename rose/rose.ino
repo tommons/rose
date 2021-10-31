@@ -22,31 +22,32 @@ const uint32_t DROP_OFF_COUNT_THRESHOLD2_ms   	= 500;
 uint32_t drop_state                  = 0; 
 elapsedMillis drop_off_elapsed_ms;
 elapsedMillis drop_on_elapsed_ms;
+elapsedMillis blink_ms;
+int blinkState = LOW;
 
 uint32_t counter = 0;
 
-
 void setup() {
+	pinMode(LED_BUILTIN, OUTPUT);
+	pinMode(PIN_RC_CH6, INPUT);
+	pinMode(PIN_SWITCH, INPUT_PULLUP);
 
-  pinMode(PIN_RC_CH6, INPUT);
-  pinMode(PIN_SWITCH, INPUT_PULLUP);
+	led_outer_ring.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
+	led_outer_ring.show();            // Turn OFF all pixels ASAP
+	led_outer_ring.setBrightness(127); // Set BRIGHTNESS (max = 255)
 
-  led_outer_ring.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
-  led_outer_ring.show();            // Turn OFF all pixels ASAP
-  led_outer_ring.setBrightness(127); // Set BRIGHTNESS (max = 255)
-  
-  led_inner_ring.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
-  led_inner_ring.show();            // Turn OFF all pixels ASAP
-  led_inner_ring.setBrightness(127); // Set BRIGHTNESS (max = 255)
-  
-  servo1.attach(PIN_SERVO1,SERVO_PW_MIN,SERVO_PW_MAX);
-  servo2.attach(PIN_SERVO2,SERVO_PW_MIN,SERVO_PW_MAX);
-  servo3.attach(PIN_SERVO3,SERVO_PW_MIN,SERVO_PW_MAX);
-  servo4.attach(PIN_SERVO4,SERVO_PW_MIN,SERVO_PW_MAX);
+	led_inner_ring.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
+	led_inner_ring.show();            // Turn OFF all pixels ASAP
+	led_inner_ring.setBrightness(127); // Set BRIGHTNESS (max = 255)
 
-  state_reset();
-  
-  Serial.begin(9600); // Pour a bowl of Serial
+	servo1.attach(PIN_SERVO1,SERVO_PW_MIN,SERVO_PW_MAX);
+	servo2.attach(PIN_SERVO2,SERVO_PW_MIN,SERVO_PW_MAX);
+	servo3.attach(PIN_SERVO3,SERVO_PW_MIN,SERVO_PW_MAX);
+	servo4.attach(PIN_SERVO4,SERVO_PW_MIN,SERVO_PW_MAX);
+
+	state_reset();
+
+	Serial.begin(9600); // Pour a bowl of Serial
 
 }
 
@@ -134,7 +135,22 @@ void loop() {
 	}
 
 	stateMachine(state);
-  
+
+	// Blink the built-in LED
+	if( blink_ms > 1000 )
+	{
+		blink_ms = 0;
+		if( blinkState == HIGH )
+		{
+			blinkState = LOW;
+		}
+		else
+		{
+			blinkState = HIGH;
+		}
+		digitalWrite(LED_BUILTIN, blinkState);
+	}
+		
 	counter = counter + 1;
 
 	delay(DELAY_MS);

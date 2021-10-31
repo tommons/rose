@@ -121,17 +121,33 @@ void state3()
 {
 	const uint8_t stateIdx = 3;
 	
-	const uint32_t chaseInterval_ms = 100;
+	const uint32_t chaseInterval_ms = 500;
 	const uint32_t chaseInteralCount = chaseInterval_ms / DELAY_MS;
 	const uint8_t chaseOffset = 3;
+	if( state_counter[stateIdx] == 0 )
+	{
+		chaseCounter1 = 0;
+		chaseCounter2 = 0;
+	}
 	
 	chase( led_outer_ring, 
 			state_counter[stateIdx], 
 			led_outer_ring.Color(0,255,0), // green
 			led_outer_ring.Color(255,0,0), //red
 			chaseInteralCount,
-			chaseOffset );
+			chaseOffset,
+			chaseCounter1,
+			false);
   
+  	chase( led_inner_ring, 
+			state_counter[stateIdx], 
+			led_outer_ring.Color(64,64,64), // dimmer white
+			led_outer_ring.Color(255,255,255), // white
+			chaseInteralCount,
+			chaseOffset,
+			chaseCounter2,
+			true );
+			
 	state_counter[stateIdx]++;
 }
 
