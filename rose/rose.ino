@@ -2,6 +2,7 @@
 #include <Adafruit_NeoPixel.h>
 #include "states.h"
 #include "led_functions.h"
+#include <elapsedMillis.h>
 
 uint32_t ch6_cur, ch6_prev, ch6_filt;
 uint32_t buttonState 						= LOW;
@@ -12,13 +13,15 @@ const uint32_t RC_CONNECTED_THRESHOLD      	= 900;
 boolean drop_petal              			= false;
 uint32_t drop_on_count               		= 0;
 uint32_t drop_off_count              		= 0;
-const uint32_t DROP_OFF_COUNT_THRESHOLD1   	= 1000 / DELAY_MS; // 1 sec
-const uint32_t DROP_ON_COUNT_THRESHOLD1    	= 500 / DELAY_MS; // .5 sec
-const uint32_t DROP_OFF_COUNT_THRESHOLD2   	= 500 / DELAY_MS; // .5 sec
+const uint32_t DROP_OFF_COUNT_THRESHOLD1_ms   	= 1000;
+const uint32_t DROP_ON_COUNT_THRESHOLD1_ms    	= 500;
+const uint32_t DROP_OFF_COUNT_THRESHOLD2_ms   	= 500;
 // 0=waiting for very long off
 // 1=waiting for long on
 // 2=waiting for long off
 uint32_t drop_state                  = 0; 
+elapsedMillis drop_off_elapsed_ms;
+elapsedMillis drop_on_elapsed_ms;
 
 uint32_t counter = 0;
 
@@ -51,19 +54,21 @@ void loop() {
 
 	// read RC states
 	ch6_cur 		= pulseIn(PIN_RC_CH6, HIGH, 25000); // CH6 SWB
-	buttonState 	= digitalRead(PIN_SWITCH); // Manual button
+	buttonState 	= LOW; //digitalRead(PIN_SWITCH); // Manual button
 
 	// filter the PWM inputs
 	//ch6_filt = (ch6_cur + ch6_prev) >> 1; // 2point average
-	ch6_filt = (ch6_cur * 3 >> 2) + (ch6_filt >> 2); // alpha filter 3/4, 1/4
+	//ch6_filt = (ch6_cur * 3 >> 2) + (ch6_filt >> 2); // alpha filter 3/4, 1/4
+	ch6_filt = (ch6_cur  >> 1) + (ch6_filt >> 1); // alpha filter 1/2, 1/2
 
-	if( false && counter % 10 == 0 )
+	if( counter % 10 == 0 )
 	{
 		Serial.print("Ch6: "); Serial.print(ch6_cur);
 		Serial.print(" Ch6filt: "); Serial.print(ch6_filt);
+		Serial.print(" buttonState: "); Serial.print(buttonState);
 		Serial.println("");
 	}
-
+	
 	ch6_prev = ch6_cur;
 
 	// Petal drop state machine
@@ -72,12 +77,18 @@ void loop() {
 	// then low for 1/2 sec
 	if( ch6_filt > SWITCH_ON_HIGH_THRESHOLD || buttonState == HIGH )
 	{
+		if( drop_on_count == 0 )
+		{
+			Serial.println("First Switch on");
+			drop_on_elapsed_ms = 0;
+		}
+		
 		drop_on_count   = drop_on_count + 1;
 		drop_off_count  = 0;
 
 		if( drop_state == 1 )
 		{
-			if( drop_on_count >= DROP_ON_COUNT_THRESHOLD1 )
+			if( drop_on_elapsed_ms >= DROP_ON_COUNT_THRESHOLD1_ms )
 			{
 				drop_state = 2; // waiting for long off
 			}
@@ -86,12 +97,18 @@ void loop() {
 	else if( ( ch6_filt > RC_CONNECTED_THRESHOLD && ch6_filt < SWITCH_OFF_LOW_THRESHOLD ) ||
 			 buttonState == LOW )
 	{
+		if( drop_off_count == 0 )
+		{
+			Serial.println("First Switch off");
+			drop_off_elapsed_ms = 0;
+		}
+		
 		drop_on_count   = 0;
 		drop_off_count  = drop_off_count + 1;
 
 		if( drop_state == 0 ) // waiting for very long off
 		{
-			if( drop_off_count >= DROP_OFF_COUNT_THRESHOLD1 )
+			if( drop_off_elapsed_ms >= DROP_OFF_COUNT_THRESHOLD1_ms )
 			{
 			  drop_state = 1; // waiting for long on
 			}
@@ -102,16 +119,15 @@ void loop() {
 		}
 		else if( drop_state == 2 ) // waiting for long off
 		{
-			if( drop_off_count >= DROP_OFF_COUNT_THRESHOLD2 )
+			if( drop_off_elapsed_ms >= DROP_OFF_COUNT_THRESHOLD2_ms )
 			{
-
 				// reset counters and state machine
 				drop_state      = 0;
 				drop_off_count  = 0;
 
 				incrementState();
 				
-				Serial.print("DROP PETAL!!! State is now: ");
+				Serial.print("INCREMENT STATE!!! State is now: ");
 				Serial.println(state);
 			}
 		}
