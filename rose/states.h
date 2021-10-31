@@ -37,12 +37,11 @@ Servo servo4;
 Adafruit_NeoPixel led_outer_ring(LED_COUNT_OUTER_RING, PIN_LED_OUTER_RING, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel led_inner_ring(LED_COUNT_INNER_RING, PIN_LED_INNER_RING, NEO_GRB + NEO_KHZ800);
 
-uint32_t state   = 0;
+uint32_t state   = 0; // state machine value for sequencing instructions
 
 #define MAX_NUM_STATES 20
-#define NUM_STATES 5
+#define NUM_STATES 7
 uint32_t state_counter[MAX_NUM_STATES] = {0};
-
 
 uint32_t servoMap( const uint32_t angle )
 {
@@ -94,46 +93,76 @@ void state0()
 
 void state1()
 {
+	const uint8_t stateIdx = 1;
+	
 	const uint32_t fadeTime_ms = 5000;
 	const uint32_t fadeupcount = fadeTime_ms / DELAY_MS;
 
-	fadeIn( led_outer_ring, state_counter[1], 0, 255, 255, fadeupcount ); // RED
-	fadeIn( led_inner_ring, state_counter[1], 0, 0, 255, fadeupcount ); // WHITE
+	fadeIn( led_outer_ring, state_counter[stateIdx], 0, 255, 255, fadeupcount ); // RED
+	fadeIn( led_inner_ring, state_counter[stateIdx], 0, 0, 255, fadeupcount ); // WHITE
 	  
-	state_counter[1]++;
+	state_counter[stateIdx]++;
 }
 
 void state2()
 {
-  servo2.write( servoMap( SERVO_MAX_ANGLE ) );
+	const uint8_t stateIdx = 2;
+	
+	const uint32_t fadeTime_ms = 5000;
+	const uint32_t fadeoutcount = fadeTime_ms / DELAY_MS;
+
+	fadeOut( led_outer_ring, state_counter[stateIdx], 65535*306/360, 255, 255, fadeoutcount ); // PURPLE
+	fadeOut( led_inner_ring, state_counter[stateIdx], 0, 0, 255, fadeoutcount ); // WHITE
   
-  state_counter[2]++;
+	state_counter[stateIdx]++;
 }
 
 void state3()
 {
-  servo3.write( servoMap( SERVO_MAX_ANGLE ) );
+	const uint8_t stateIdx = 3;
+	
+	const uint32_t chaseInterval_ms = 100;
+	const uint32_t chaseInteralCount = chaseInterval_ms / DELAY_MS;
+	const uint8_t chaseOffset = 3;
+	
+	chase( led_outer_ring, 
+			state_counter[stateIdx], 
+			led_outer_ring.Color(0,255,0), // green
+			led_outer_ring.Color(255,0,0), //red
+			chaseInteralCount,
+			chaseOffset );
   
-  state_counter[3]++;
+	state_counter[stateIdx]++;
 }
 
 void state4()
 {
-  servo4.write( servoMap( SERVO_MAX_ANGLE ) );
+	const uint8_t stateIdx = 4;
+	
+	if( state_counter[stateIdx] == 0 )
+		servo2.write( servoMap( SERVO_MAX_ANGLE ) );
   
-  state_counter[4]++;
+	state_counter[stateIdx]++;
 }
 
 void state5()
 {
+	const uint8_t stateIdx = 5;
+	
+	if( state_counter[stateIdx] == 0 )
+		servo3.write( servoMap( SERVO_MAX_ANGLE ) );
   
-  state_counter[5]++;
+	state_counter[stateIdx]++;
 }
 
 void state6()
 {
+	const uint8_t stateIdx = 6;
+	
+	if( state_counter[stateIdx] == 0 )
+		servo4.write( servoMap( SERVO_MAX_ANGLE ) );
   
-  state_counter[6]++;
+	state_counter[stateIdx]++;
 }
 
 void state7()

@@ -29,7 +29,7 @@ uint32_t counter = 0;
 void setup() {
 
   pinMode(PIN_RC_CH6, INPUT);
-  pinMode(PIN_SWITCH, INPUT);
+  pinMode(PIN_SWITCH, INPUT_PULLUP);
 
   led_outer_ring.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
   led_outer_ring.show();            // Turn OFF all pixels ASAP
@@ -54,12 +54,12 @@ void loop() {
 
 	// read RC states
 	ch6_cur 		= pulseIn(PIN_RC_CH6, HIGH, 25000); // CH6 SWB
-	buttonState 	= LOW; //digitalRead(PIN_SWITCH); // Manual button
+	buttonState 	= digitalRead(PIN_SWITCH); // Manual button
 
 	// filter the PWM inputs
 	//ch6_filt = (ch6_cur + ch6_prev) >> 1; // 2point average
 	//ch6_filt = (ch6_cur * 3 >> 2) + (ch6_filt >> 2); // alpha filter 3/4, 1/4
-	ch6_filt = (ch6_cur  >> 1) + (ch6_filt >> 1); // alpha filter 1/2, 1/2
+	ch6_filt = (ch6_cur >> 1) + (ch6_filt >> 1); // alpha filter 1/2, 1/2
 
 	if( counter % 10 == 0 )
 	{
@@ -75,11 +75,11 @@ void loop() {
 	// require low for 1 sec
 	// then high for 1/2 sec
 	// then low for 1/2 sec
-	if( ch6_filt > SWITCH_ON_HIGH_THRESHOLD || buttonState == HIGH )
+	if( ch6_filt > SWITCH_ON_HIGH_THRESHOLD || buttonState == LOW )
 	{
 		if( drop_on_count == 0 )
 		{
-			Serial.println("First Switch on");
+			Serial.print("First Switch on.  Off for "); Serial.println(drop_off_elapsed_ms);
 			drop_on_elapsed_ms = 0;
 		}
 		
@@ -95,11 +95,11 @@ void loop() {
 		}
 	}
 	else if( ( ch6_filt > RC_CONNECTED_THRESHOLD && ch6_filt < SWITCH_OFF_LOW_THRESHOLD ) ||
-			 buttonState == LOW )
+			 buttonState == HIGH )
 	{
 		if( drop_off_count == 0 )
 		{
-			Serial.println("First Switch off");
+			Serial.print("First Switch off.  On for "); Serial.println(drop_on_elapsed_ms);
 			drop_off_elapsed_ms = 0;
 		}
 		
