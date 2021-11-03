@@ -5,6 +5,37 @@
 #include <elapsedMillis.h>
 #include "setup.h"
 
+uint8_t wipeForward8_v[8];
+uint8_t wipeBackward8_v[8];
+
+elapsedMillis ledElapsed1_ms = 0;
+elapsedMillis ledElapsed2_ms = 0;
+elapsedMillis ledUpdate1_ms = 0;
+elapsedMillis ledUpdate2_ms = 0;
+const uint16_t ledFadeUpdate_ms = 50;
+
+uint32_t ledCounter1 = 0;
+uint32_t ledCounter2 = 0;
+
+void led_setup()
+{
+	for( int i=0; i < 8; i++ )
+	{
+		// dim to bright
+		wipeForward8_v[i] = 255 / (7-i+1);
+		// bright to dim
+		wipeBackward8_v[i] = 255 / (i+1);
+	}
+}
+
+void clearLeds()
+{
+	led_outer_ring.clear();
+	led_outer_ring.show();
+	led_inner_ring.clear();
+	led_inner_ring.show();
+}
+
 void colorFill( Adafruit_NeoPixel & led, 
 				const uint32_t color )
 {
@@ -16,44 +47,46 @@ void colorFill( Adafruit_NeoPixel & led,
 }
 				
 void fadeIn( 	Adafruit_NeoPixel & led, 
-				const uint32_t & state_counter, 
+				elapsedMillis & ledElapsed_ms, 
+				elapsedMillis & ledUpdate_ms, 
 				const uint16_t h, 
 				const uint8_t s, 
 				const uint8_t v,
-				const uint32_t fadeCount )
+				const unsigned long fadeTime_ms )
 {
 	// Fade in from off
-	if( state_counter <= fadeCount )
+	if( ledUpdate_ms >= ledFadeUpdate_ms )
 	{
-		const uint8_t v1 = map( state_counter, 0, fadeCount, 0, 255);
+		const unsigned long eTime_ms = ledElapsed_ms;
+		
+		const uint8_t v1 = map( min(eTime_ms,fadeTime_ms), 0, fadeTime_ms, 0, 255);
 
 		colorFill( led, led.ColorHSV(h, s, v1) );
+		ledUpdate_ms = 0;		
 	}
 }
 
 void fadeOut( 	Adafruit_NeoPixel & led, 
-				const uint32_t & state_counter, 
+				elapsedMillis & ledElapsed_ms, 
+				elapsedMillis & ledUpdate_ms, 
 				const uint16_t h, 
 				const uint8_t s, 
 				const uint8_t v,
-				const uint32_t fadeCount )
+				const unsigned long fadeTime_ms )
 {
 	// Fade out from on
-	if( state_counter <= fadeCount )
+	if( ledUpdate_ms >= ledFadeUpdate_ms )
 	{
-		const uint8_t v1 = map( state_counter, 0, fadeCount, 255, 0);
+		const unsigned long eTime_ms = ledElapsed_ms;
+
+		const uint8_t v1 = map( min(eTime_ms,fadeTime_ms), 0, fadeTime_ms, 255, 0);
 
 		colorFill( led, led.ColorHSV(h, s, v1) );
+		ledUpdate_ms = 0;
 	}
 }
 
-elapsedMillis ledElapsed1_ms = 0;
-elapsedMillis ledElapsed2_ms = 0;
-uint32_t ledCounter1 = 0;
-uint32_t ledCounter2 = 0;
-
 void chase( Adafruit_NeoPixel & led, 
-			const uint32_t & state_counter, 
 			elapsedMillis & elapsed_ms, 
 			uint32_t color1,
 			uint32_t color2,
@@ -86,7 +119,6 @@ void chase( Adafruit_NeoPixel & led,
 }
 
 void wipe( Adafruit_NeoPixel & led, 
-			const uint32_t & state_counter, 
 			elapsedMillis & elapsed_ms, 
 			const uint16_t h, 
 			const uint8_t s, 
@@ -146,12 +178,15 @@ void chaseBackward(const uint32_t state_counter)
 	const uint8_t chaseOffset 		= 3;
 	if( state_counter == 0 )
 	{
+		ledElapsed1_ms = 0;
+		ledElapsed2_ms = 0;
+		ledUpdate1_ms = 0;
+		ledUpdate2_ms = 0;
 		ledCounter1 = 0;
 		ledCounter2 = 0;
 	}
 	
 	chase( led_outer_ring, 
-			state_counter, 
 			ledElapsed1_ms,
 			led_outer_ring.Color(0,255,0), // green
 			led_outer_ring.Color(255,0,0), //red
@@ -161,7 +196,6 @@ void chaseBackward(const uint32_t state_counter)
 			false);
   
   	chase( led_inner_ring, 
-			state_counter, 
 			ledElapsed2_ms,
 			led_outer_ring.Color(64,64,64), // dimmer white
 			led_outer_ring.Color(255,255,255), // white
@@ -171,18 +205,20 @@ void chaseBackward(const uint32_t state_counter)
 			false );
 }
 	
-void wipeRed(const uint32_t state_counter, bool forwardDirection)
+void wipeRed(const uint32_t state_counter, const uint16_t wipeInterval_ms, bool forwardDirection)
 {
-	const uint32_t wipeInterval_ms 	= 50;
 	const uint8_t wipeLength 		= 5;
 	if( state_counter == 0 )
 	{
+		ledElapsed1_ms = 0;
+		ledElapsed2_ms = 0;
+		ledUpdate1_ms = 0;
+		ledUpdate2_ms = 0;
 		ledCounter1 = 0;
 		ledCounter2 = 0;
 	}
 	
 	wipe( led_outer_ring, 
-			state_counter, 
 			ledElapsed1_ms,
 			0, 255, 255, // RED
 			wipeInterval_ms,
@@ -191,11 +227,10 @@ void wipeRed(const uint32_t state_counter, bool forwardDirection)
 			forwardDirection );
   
 	wipe( led_inner_ring, 
-			state_counter, 
 			ledElapsed2_ms,
 			0, 255, 255, // RED
 			wipeInterval_ms,
-			wipeLength,
+			8,
 			ledCounter2,
 			forwardDirection );
 }	
@@ -203,19 +238,37 @@ void wipeRed(const uint32_t state_counter, bool forwardDirection)
 void fadeInRed( const uint32_t state_counter )
 {
 	const uint32_t fadeTime_ms = 5000;
-	const uint32_t fadeupcount = fadeTime_ms / DELAY_MS;
-
-	fadeIn( led_outer_ring, state_counter, 0, 255, 255, fadeupcount ); // RED
-	fadeIn( led_inner_ring, state_counter, 0, 0, 255, fadeupcount ); // WHITE	  
+	
+	if( state_counter == 0 )
+	{
+		ledElapsed1_ms = 0;
+		ledElapsed2_ms = 0;
+		ledUpdate1_ms = 0;
+		ledUpdate2_ms = 0;
+		ledCounter1 = 0;
+		ledCounter2 = 0;		
+	}
+	
+	fadeIn( led_outer_ring, ledElapsed1_ms, ledUpdate1_ms, 0, 255, 255, fadeTime_ms ); // RED
+	fadeIn( led_inner_ring, ledElapsed2_ms, ledUpdate2_ms, 0, 0, 255, fadeTime_ms ); // WHITE	  
 }
 
 void fadeOutPurple( const uint32_t state_counter )
 {
 	const uint32_t fadeTime_ms = 3000;
-	const uint32_t fadeoutcount = fadeTime_ms / DELAY_MS;
 
-	fadeOut( led_outer_ring, state_counter, 65535*306/360, 255, 255, fadeoutcount ); // PURPLE
-	fadeOut( led_inner_ring, state_counter, 0, 0, 255, fadeoutcount ); // WHITE
+	if( state_counter == 0 )
+	{
+		ledElapsed1_ms = 0;
+		ledElapsed2_ms = 0;
+		ledUpdate1_ms = 0;
+		ledUpdate2_ms = 0;
+		ledCounter1 = 0;
+		ledCounter2 = 0;		
+	}
+	
+	fadeOut( led_outer_ring, ledElapsed1_ms, ledUpdate1_ms, 65535*306/360, 255, 255, fadeTime_ms ); // PURPLE
+	fadeOut( led_inner_ring, ledElapsed2_ms, ledUpdate2_ms, 0, 0, 255, fadeTime_ms ); // WHITE
 }  
   
 #endif

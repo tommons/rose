@@ -9,7 +9,7 @@
 #define SERVO_PW_MAX    1900
 #define SERVO_INITIAL_ANGLE SERVO_MIN_ANGLE
 
-#define DELAY_MS 25
+#define DELAY_MS 10
 
 Servo servo1;
 Servo servo2;
@@ -29,8 +29,9 @@ Servo servo4;
 // LEDs
 #define PIN_LED_OUTER_RING   8
 #define PIN_LED_INNER_RING   9
-#define LED_COUNT_OUTER_RING 5
+#define LED_COUNT_OUTER_RING 24
 #define LED_COUNT_INNER_RING 24
+#define LED_MAX_BRIGHTNESS 91
 
 Adafruit_NeoPixel led_outer_ring(LED_COUNT_OUTER_RING, PIN_LED_OUTER_RING, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel led_inner_ring(LED_COUNT_INNER_RING, PIN_LED_INNER_RING, NEO_GRB + NEO_KHZ800);

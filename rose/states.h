@@ -12,7 +12,7 @@
 uint32_t state   = 0; // state machine value for sequencing instructions
 
 #define MAX_NUM_STATES 20
-#define NUM_STATES 7
+#define NUM_STATES 10
 uint32_t state_counter[MAX_NUM_STATES] = {0};
 
 void resetStateCounters()
@@ -89,7 +89,7 @@ void state4()
 {
 	const uint8_t stateIdx = 4;
 	
-	wipeRed(state_counter[stateIdx], true); // forward
+	wipeRed(state_counter[stateIdx], 40, true); // forward
 				
 	state_counter[stateIdx]++;
 }
@@ -98,7 +98,7 @@ void state5()
 {
 	const uint8_t stateIdx = 5;
 	
-	wipeRed(state_counter[stateIdx], false); // backward
+	wipeRed(state_counter[stateIdx], 20, false); // backward
 			
 	state_counter[stateIdx]++;
 }
@@ -106,89 +106,113 @@ void state5()
 void state6()
 {
 	const uint8_t stateIdx = 6;
+
+	clearLeds();
 	
 	if( state_counter[stateIdx] == 0 )
-		servo4.write( servoMap( SERVO_MAX_ANGLE ) );
+		servo1.write( servoMap( SERVO_MAX_ANGLE ) );
   
 	state_counter[stateIdx]++;
 }
 
 void state7()
 {
-  
-  state_counter[7]++;
+	const uint8_t stateIdx = 7;
+
+  	if( state_counter[stateIdx] == 0 )
+		servo2.write( servoMap( SERVO_MAX_ANGLE ) );
+	
+	state_counter[stateIdx]++;
 }
 
 void state8()
 {
-  
-  state_counter[8]++;
+	const uint8_t stateIdx = 8;
+
+  	if( state_counter[stateIdx] == 0 )
+		servo3.write( servoMap( SERVO_MAX_ANGLE ) );
+	
+	state_counter[stateIdx]++;
 }
 
 void state9()
 {
-  
-  state_counter[9]++;
+	const uint8_t stateIdx = 9;
+
+  	if( state_counter[stateIdx] == 0 )
+		servo4.write( servoMap( SERVO_MAX_ANGLE ) );
+	
+	state_counter[stateIdx]++;
 }
 
 void state10()
 {
+	const uint8_t stateIdx = 10;
   
-  state_counter[610]++;
+	state_counter[stateIdx]++;
 }
 
 void state11()
 {
+	const uint8_t stateIdx = 11;
   
-  state_counter[11]++;
+	state_counter[stateIdx]++;
 }
 
 void state12()
 {
+	const uint8_t stateIdx = 12;
   
-  state_counter[12]++;
+	state_counter[stateIdx]++;
 }
 
 void state13()
 {
+	const uint8_t stateIdx = 13;
   
-  state_counter[13]++;
+	state_counter[stateIdx]++;
 }
 
 void state14()
 {
-  
-  state_counter[14]++;
+	const uint8_t stateIdx = 14;
+
+	state_counter[stateIdx]++;
 }
 
 void state15()
 {
-  
-  state_counter[15]++;
+	const uint8_t stateIdx = 15;
+
+	state_counter[stateIdx]++;
 }
 
 void state16()
 {
-  
-  state_counter[16]++;
+	const uint8_t stateIdx = 16;
+
+	state_counter[stateIdx]++;
 }
 
 void state17()
 {
-  
-  state_counter[17]++;
+	const uint8_t stateIdx = 17;
+
+	state_counter[stateIdx]++;
 }
 
 void state18()
 {
-  
-  state_counter[18]++;
+	const uint8_t stateIdx = 18;
+
+	state_counter[stateIdx]++;
 }
 
 void state19()
 {
-  
-  state_counter[19]++;
+	const uint8_t stateIdx = 19;
+
+	state_counter[stateIdx]++;
 }
 
 void stateMachine(const uint32_t state)
