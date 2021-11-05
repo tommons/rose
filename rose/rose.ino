@@ -1,5 +1,3 @@
-#include <Servo.h>
-#include <Adafruit_NeoPixel.h>
 #include "setup.h"
 #include "states.h"
 #include "led_functions.h"
@@ -17,7 +15,7 @@ uint32_t drop_on_count               			= 0;
 uint32_t drop_off_count              			= 0;
 const uint32_t DROP_OFF_COUNT_THRESHOLD1_ms   	= 1000;
 const uint32_t DROP_ON_COUNT_THRESHOLD1_ms    	= 500;
-const uint32_t DROP_OFF_COUNT_THRESHOLD2_ms   	= 500;
+const uint32_t DROP_OFF_COUNT_THRESHOLD2_ms   	= 100;
 // 0=waiting for very long off
 // 1=waiting for long on
 // 2=waiting for long off
@@ -35,6 +33,8 @@ void setup() {
 	pinMode(PIN_RC_CH6, INPUT);
 	pinMode(PIN_SWITCH, INPUT_PULLUP);
 
+    setupServos();
+	
 	led_outer_ring.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
 	led_outer_ring.show();            // Turn OFF all pixels ASAP
 	led_outer_ring.setBrightness(LED_MAX_BRIGHTNESS); // Set BRIGHTNESS (max = 255)
@@ -42,11 +42,6 @@ void setup() {
 	led_inner_ring.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
 	led_inner_ring.show();            // Turn OFF all pixels ASAP
 	led_inner_ring.setBrightness(LED_MAX_BRIGHTNESS); // Set BRIGHTNESS (max = 255)
-
-	servo1.attach(PIN_SERVO1,SERVO_PW_MIN,SERVO_PW_MAX);
-	servo2.attach(PIN_SERVO2,SERVO_PW_MIN,SERVO_PW_MAX);
-	servo3.attach(PIN_SERVO3,SERVO_PW_MIN,SERVO_PW_MAX);
-	servo4.attach(PIN_SERVO4,SERVO_PW_MIN,SERVO_PW_MAX);
 
 	state_reset();
 

@@ -37,10 +37,8 @@ void incrementState()
 
 void state_reset()
 {
-	servo1.write(SERVO_INITIAL_ANGLE);
-	servo2.write(SERVO_INITIAL_ANGLE);
-	servo3.write(SERVO_INITIAL_ANGLE);
-	servo4.write(SERVO_INITIAL_ANGLE);
+	for( uint8_t servoIdx=0; servoIdx < NUM_SERVOS; servoIdx++ )
+		servoHoldPetal( servoIdx );
 
 	state = 0;
 
@@ -110,7 +108,7 @@ void state6()
 	clearLeds();
 	
 	if( state_counter[stateIdx] == 0 )
-		servo1.write( servoMap( SERVO_MAX_ANGLE ) );
+		servoDropPetal(SERVO_PETAL_1);
   
 	state_counter[stateIdx]++;
 }
@@ -120,7 +118,7 @@ void state7()
 	const uint8_t stateIdx = 7;
 
   	if( state_counter[stateIdx] == 0 )
-		servo2.write( servoMap( SERVO_MAX_ANGLE ) );
+		servoDropPetal(SERVO_PETAL_2);
 	
 	state_counter[stateIdx]++;
 }
@@ -130,7 +128,7 @@ void state8()
 	const uint8_t stateIdx = 8;
 
   	if( state_counter[stateIdx] == 0 )
-		servo3.write( servoMap( SERVO_MAX_ANGLE ) );
+		servoDropPetal(SERVO_PETAL_3);
 	
 	state_counter[stateIdx]++;
 }
@@ -140,7 +138,7 @@ void state9()
 	const uint8_t stateIdx = 9;
 
   	if( state_counter[stateIdx] == 0 )
-		servo4.write( servoMap( SERVO_MAX_ANGLE ) );
+		servoDropPetal(SERVO_PETAL_4);
 	
 	state_counter[stateIdx]++;
 }
