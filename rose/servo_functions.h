@@ -3,12 +3,18 @@
 
 #include "setup.h"
 
+#define SERVO_PETAL_HOLD_ANGLE 120
+#define SERVO_PETAL_DROP_ANGLE 95
+
 void setupServos()
 {
 	servos.begin();
 	servos.setOscillatorFrequency(27000000);
 	servos.setPWMFreq(SERVO_FREQ_HZ);  // Analog servos run at ~50 Hz updates
 }
+
+uint32_t servoCounter = 0;
+elapsedMillis servoElapsed1_ms = 0;
 
 void setServo( const uint8_t servoNumber, const uint8_t angle )
 {
@@ -22,14 +28,25 @@ void setServo( const uint8_t servoNumber, const uint8_t angle )
 	servos.setPWM(servoNumber, 0, pwm );
 }
 
-void servoHoldPetal( const uint8_t servoNumber )
+void servoHoldPetal( const uint8_t servoNumber, const uint32_t state_counter )
 {
-	setServo(servoNumber, SERVO_PETAL_HOLD_ANGLE );
+  if( state_counter == 0 )
+	  setServo(servoNumber, SERVO_PETAL_HOLD_ANGLE );
 }
 
-void servoDropPetal( const uint8_t servoNumber )
+void servoDropPetal( const uint8_t servoNumber, const uint32_t state_counter )
 {
-	setServo(servoNumber, SERVO_PETAL_DROP_ANGLE );
+    if( state_counter == 0 )
+    {
+    	  setServo(servoNumber, SERVO_PETAL_DROP_ANGLE );
+        servoElapsed1_ms  = 0;
+        servoCounter      = 0;
+    }
+    else if( servoElapsed1_ms > 1000 && servoCounter == 0)
+    {
+        setServo(servoNumber, SERVO_PETAL_HOLD_ANGLE );
+        servoCounter      = 1;
+    }
 }
 
 #endif

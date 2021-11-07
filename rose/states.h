@@ -12,7 +12,7 @@
 uint32_t state   = 0; // state machine value for sequencing instructions
 
 #define MAX_NUM_STATES 20
-#define NUM_STATES 10
+#define NUM_STATES 5
 uint32_t state_counter[MAX_NUM_STATES] = {0};
 
 void resetStateCounters()
@@ -38,7 +38,7 @@ void incrementState()
 void state_reset()
 {
 	for( uint8_t servoIdx=0; servoIdx < NUM_SERVOS; servoIdx++ )
-		servoHoldPetal( servoIdx );
+		servoHoldPetal( servoIdx, 0 );
 
 	state = 0;
 
@@ -61,7 +61,9 @@ void state1()
 	const uint8_t stateIdx = 1;
 	
 	fadeInRed( state_counter[stateIdx] );
-
+  
+  servoDropPetal(SERVO_PETAL_1, state_counter[stateIdx]);
+    
 	state_counter[stateIdx]++;
 }
 
@@ -70,7 +72,9 @@ void state2()
 	const uint8_t stateIdx = 2;
 	
 	fadeOutPurple( state_counter[stateIdx] );
-  
+
+  servoDropPetal(SERVO_PETAL_2, state_counter[stateIdx]);
+    
 	state_counter[stateIdx]++;
 }
 
@@ -79,7 +83,9 @@ void state3()
 	const uint8_t stateIdx = 3;
 	
 	chaseBackward(state_counter[stateIdx]);
-			
+ 
+  servoDropPetal(SERVO_PETAL_3, state_counter[stateIdx]);
+    
 	state_counter[stateIdx]++;
 }
 
@@ -88,7 +94,9 @@ void state4()
 	const uint8_t stateIdx = 4;
 	
 	wipeRed(state_counter[stateIdx], 40, true); // forward
-				
+  
+  servoDropPetal(SERVO_PETAL_4, state_counter[stateIdx]);
+    			
 	state_counter[stateIdx]++;
 }
 
@@ -108,7 +116,7 @@ void state6()
 	clearLeds();
 	
 	if( state_counter[stateIdx] == 0 )
-		servoDropPetal(SERVO_PETAL_1);
+		servoDropPetal(SERVO_PETAL_1, state_counter[stateIdx]);
   
 	state_counter[stateIdx]++;
 }
@@ -118,7 +126,7 @@ void state7()
 	const uint8_t stateIdx = 7;
 
   	if( state_counter[stateIdx] == 0 )
-		servoDropPetal(SERVO_PETAL_2);
+		servoDropPetal(SERVO_PETAL_2, state_counter[stateIdx]);
 	
 	state_counter[stateIdx]++;
 }
@@ -128,7 +136,7 @@ void state8()
 	const uint8_t stateIdx = 8;
 
   	if( state_counter[stateIdx] == 0 )
-		servoDropPetal(SERVO_PETAL_3);
+		servoDropPetal(SERVO_PETAL_3, state_counter[stateIdx]);
 	
 	state_counter[stateIdx]++;
 }
@@ -138,7 +146,7 @@ void state9()
 	const uint8_t stateIdx = 9;
 
   	if( state_counter[stateIdx] == 0 )
-		servoDropPetal(SERVO_PETAL_4);
+		servoDropPetal(SERVO_PETAL_4, state_counter[stateIdx]);
 	
 	state_counter[stateIdx]++;
 }

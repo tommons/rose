@@ -8,11 +8,10 @@
 #define SERVO_MAX_ANGLE 120
 #define SERVO_MIN_ANGLE 0
 #define SERVO_INITIAL_ANGLE SERVO_MIN_ANGLE
-#define SERVO_PW_MIN_US   700 // This is the rounded 'minimum' microsecond length based on the minimum pulse of 150
+#define SERVO_PW_MIN_US   878 // This is the rounded 'minimum' microsecond length based on the minimum pulse of 150
 #define SERVO_PW_MAX_US   1900 // This is the rounded 'minimum' microsecond length based on the minimum pulse of 150
 #define SERVO_FREQ_HZ     50 // Analog servos run at ~50/20 Hz updates
-#define SERVO_PETAL_HOLD_ANGLE 0
-#define SERVO_PETAL_DROP_ANGLE 120
+
 #define NUM_SERVOS 4
 // Mapping of petal number to servo number
 #define SERVO_PETAL_1 0
