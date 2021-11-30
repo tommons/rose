@@ -4,7 +4,7 @@
 #include "setup.h"
 
 #define SERVO_PETAL_HOLD_ANGLE 120
-#define SERVO_PETAL_DROP_ANGLE 95
+#define SERVO_PETAL_DROP_ANGLE 50
 
 void setupServos()
 {
