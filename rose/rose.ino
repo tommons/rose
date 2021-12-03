@@ -3,6 +3,7 @@
 #include "led_functions.h"
 #include "servo_functions.h"
 #include <elapsedMillis.h>
+#include "dmx.h"
 
 uint32_t ch6_cur, ch6_prev, ch6_filt;
 uint32_t buttonState 							= LOW;
@@ -53,6 +54,8 @@ void printInputEventHistory()
 uint32_t counter = 0;
 
 void setup() {
+  DMXSerial.init(DMXReceiver);
+
 	pinMode(LED_BUILTIN, OUTPUT);
 	pinMode(PIN_RC_CH6, INPUT);
 	pinMode(PIN_SWITCH, INPUT_PULLUP);
@@ -85,6 +88,8 @@ uint32_t zeroCount = 0;
 
 void loop() {
 
+    handleDMX();
+    
 	if( checkInput_ms > 50 )
 	{
 		// read RC states
