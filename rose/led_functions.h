@@ -5,6 +5,13 @@
 #include <elapsedMillis.h>
 #include "setup.h"
 
+uint8_t  led_prev_state = 0;
+uint8_t  led_state = 0;
+bool     led_new_state = true;
+uint32_t led_inner_ring_new_color = 0;
+uint32_t led_outer_ring_new_color = 0;
+
+/*
 uint8_t wipeForward8_v[8];
 uint8_t wipeBackward8_v[8];
 
@@ -17,6 +24,7 @@ const uint16_t ledFadeUpdate_ms = 50;
 uint32_t ledCounter1 = 0;
 uint32_t ledCounter2 = 0;
 
+
 void led_setup()
 {
 	for( int i=0; i < 8; i++ )
@@ -27,65 +35,7 @@ void led_setup()
 		wipeBackward8_v[i] = 255 / (i+1);
 	}
 }
-
-void clearLeds()
-{
-	led_outer_ring.clear();
-	led_outer_ring.show();
-	led_inner_ring.clear();
-	led_inner_ring.show();
-}
-
-void colorFill( Adafruit_NeoPixel & led, 
-				const uint32_t color )
-{
-	uint32_t gammaColor = led.gamma32(color);
 	
-	for(uint32_t i=0; i < led.numPixels(); i++) // For each pixel in strip...
-		led.setPixelColor(i, gammaColor); //  Set pixel's color (in RAM)	
-	led.show();
-}
-				
-void fadeIn( 	Adafruit_NeoPixel & led, 
-				elapsedMillis & ledElapsed_ms, 
-				elapsedMillis & ledUpdate_ms, 
-				const uint16_t h, 
-				const uint8_t s, 
-				const uint8_t v,
-				const unsigned long fadeTime_ms )
-{
-	// Fade in from off
-	if( ledUpdate_ms >= ledFadeUpdate_ms )
-	{
-		const unsigned long eTime_ms = ledElapsed_ms;
-		
-		const uint8_t v1 = map( min(eTime_ms,fadeTime_ms), 0, fadeTime_ms, 0, 255);
-
-		colorFill( led, led.ColorHSV(h, s, v1) );
-		ledUpdate_ms = 0;		
-	}
-}
-
-void fadeOut( 	Adafruit_NeoPixel & led, 
-				elapsedMillis & ledElapsed_ms, 
-				elapsedMillis & ledUpdate_ms, 
-				const uint16_t h, 
-				const uint8_t s, 
-				const uint8_t v,
-				const unsigned long fadeTime_ms )
-{
-	// Fade out from on
-	if( ledUpdate_ms >= ledFadeUpdate_ms )
-	{
-		const unsigned long eTime_ms = ledElapsed_ms;
-
-		const uint8_t v1 = map( min(eTime_ms,fadeTime_ms), 0, fadeTime_ms, 255, 0);
-
-		colorFill( led, led.ColorHSV(h, s, v1) );
-		ledUpdate_ms = 0;
-	}
-}
-
 void chase( Adafruit_NeoPixel & led, 
 			elapsedMillis & elapsed_ms, 
 			uint32_t color1,
@@ -234,41 +184,83 @@ void wipeRed(const uint32_t state_counter, const uint16_t wipeInterval_ms, bool 
 			ledCounter2,
 			forwardDirection );
 }	
+*/
 
-void fadeInRed( const uint32_t state_counter )
+void colorFill( Adafruit_NeoPixel & led, const uint32_t color )
 {
-	const uint32_t fadeTime_ms = 5000;
-	
-	if( state_counter == 0 )
+	//if( color != led.prevColor )
 	{
-		ledElapsed1_ms = 0;
-		ledElapsed2_ms = 0;
-		ledUpdate1_ms = 0;
-		ledUpdate2_ms = 0;
-		ledCounter1 = 0;
-		ledCounter2 = 0;		
+		//led.prevColor = color;
+		
+		const uint32_t gammaColor = Adafruit_NeoPixel::gamma32(color);
+		
+		for(uint32_t i=0; i < led.numPixels(); i++) // For each pixel in strip...
+			led.setPixelColor(i, gammaColor); //  Set pixel's color (in RAM)	
+		led.show();
 	}
-	
-	fadeIn( led_outer_ring, ledElapsed1_ms, ledUpdate1_ms, 0, 255, 255, fadeTime_ms ); // RED
-	fadeIn( led_inner_ring, ledElapsed2_ms, ledUpdate2_ms, 0, 0, 255, fadeTime_ms ); // WHITE	  
 }
 
-void fadeOutPurple( const uint32_t state_counter )
+/*
+void colorFill( Led & led, const uint32_t color )
 {
-	const uint32_t fadeTime_ms = 3000;
-
-	if( state_counter == 0 )
-	{
-		ledElapsed1_ms = 0;
-		ledElapsed2_ms = 0;
-		ledUpdate1_ms = 0;
-		ledUpdate2_ms = 0;
-		ledCounter1 = 0;
-		ledCounter2 = 0;		
-	}
+	led.newColor = color;
 	
-	fadeOut( led_outer_ring, ledElapsed1_ms, ledUpdate1_ms, 65535*306/360, 255, 255, fadeTime_ms ); // PURPLE
-	fadeOut( led_inner_ring, ledElapsed2_ms, ledUpdate2_ms, 0, 0, 255, fadeTime_ms ); // WHITE
-}  
-  
+	if( color != led.prevColor )
+	{
+		led.prevColor = color;
+		
+		const uint32_t gammaColor = Adafruit_NeoPixel::gamma32(color);
+		
+		for(uint32_t i=0; i < led.numPixels(); i++) // For each pixel in strip...
+			led.setPixelColor(i, gammaColor); //  Set pixel's color (in RAM)	
+		led.show();
+		
+		Serial.print(led.name_); Serial.println(" Color Fill");
+	}
+}
+
+void theaterChase(Led & led, const uint32_t color, const uint32_t wait_ms) 
+{
+	if( led.ledCounter > 2)
+		led.ledCounter = 0;
+		
+	if( led.ledElapsed_ms >= wait_ms )
+	{
+		led.ledElapsed_ms = 0;
+		led.clear();         //   Set all pixels in RAM to 0 (off)
+		// 'c' counts up from 'b' to end of strip in steps of 3...
+		for(int c=led.ledCounter; c < led.numPixels(); c += 3) 
+		{
+			led.setPixelColor(c, color); // Set pixel 'c' to value 'color'
+		}
+		led.show(); // Update strip with new contents
+
+		led.ledCounter++;
+	}
+}
+*/
+void led_state_machine(const uint8_t state)
+{
+	if( state != led_prev_state )
+	{
+		led_new_state = true;
+		//led_inner_ring.newState();
+		//led_outer_ring.newState();
+	}
+	switch( state )
+	{
+		case 0: 
+			colorFill( led_inner_ring_neo, led_inner_ring_new_color );
+			colorFill( led_outer_ring_neo, led_outer_ring_new_color );			
+			break;
+		case 10: 
+			//theaterChase( led_inner_ring, led_inner_ring_new_color, 50 );
+			//theaterChase( led_outer_ring, led_outer_ring_new_color, 50 );
+			break;
+
+	}		
+
+	led_new_state = false;
+}
+	
 #endif

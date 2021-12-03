@@ -1,5 +1,5 @@
 #include "setup.h"
-#include "states.h"
+//#include "states.h"
 #include "led_functions.h"
 #include "servo_functions.h"
 #include <elapsedMillis.h>
@@ -62,14 +62,13 @@ void setup() {
 
     setupServos();
 	
-	led_outer_ring.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
-	led_outer_ring.show();            // Turn OFF all pixels ASAP
-	led_outer_ring.setBrightness(LED_MAX_BRIGHTNESS); // Set BRIGHTNESS (max = 255)
-
-	led_inner_ring.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
-	led_inner_ring.show();            // Turn OFF all pixels ASAP
-	led_inner_ring.setBrightness(LED_MAX_BRIGHTNESS); // Set BRIGHTNESS (max = 255)
-
+	led_outer_ring_neo.setBrightness(LED_MAX_BRIGHTNESS); // Set BRIGHTNESS (max = 255)
+  led_outer_ring_neo.clear();
+  led_outer_ring_neo.show();
+	led_inner_ring_neo.setBrightness(LED_MAX_BRIGHTNESS); // Set BRIGHTNESS (max = 255)
+  led_inner_ring_neo.clear();
+  led_inner_ring_neo.show();
+  
   #define BUTTON_HISTORY_SIZE 10
   for( int i=0; i < BUTTON_HISTORY_SIZE; i++ )
   {
@@ -77,7 +76,7 @@ void setup() {
     inputEventHistoryState[i]       = 0;
   }
 
-	state_reset();
+	//state_reset();
 
 	Serial.begin(9600); // Pour a bowl of Serial
 }
@@ -89,7 +88,11 @@ uint32_t zeroCount = 0;
 void loop() {
 
     handleDMX();
+
+    led_state_machine(led_state);
+    //servo_state_machine();
     
+    /*
 	if( checkInput_ms > 50 )
 	{
 		// read RC states
@@ -189,7 +192,7 @@ void loop() {
       {
         Serial.print("SERVO TENSION MODE!!!");
           inputTransitionReaction = true;
-        clearLeds();
+        //clearLeds();
         for( uint8_t servoNumber=0; servoNumber < NUM_SERVOS; servoNumber++ )
           setServo(servoNumber, SERVO_PETAL_DROP_ANGLE );
       }
@@ -200,7 +203,8 @@ void loop() {
 	}
 
 	stateMachine(state);
-	
+
+  */
 	// Blink the built-in LED
 	if( blink_ms > 1000 )
 	{

@@ -5,6 +5,7 @@
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
 #include <DMXSerial.h>
+#include "led.h"
 
 #define SERVO_MAX_ANGLE 120
 #define SERVO_MIN_ANGLE 0
@@ -52,7 +53,7 @@ Adafruit_PWMServoDriver servos = Adafruit_PWMServoDriver();
 #define LED_COUNT_INNER_RING 24
 #define LED_MAX_BRIGHTNESS 91
 
-Adafruit_NeoPixel led_outer_ring(LED_COUNT_OUTER_RING, PIN_LED_OUTER_RING, NEO_GRB + NEO_KHZ800);
-Adafruit_NeoPixel led_inner_ring(LED_COUNT_INNER_RING, PIN_LED_INNER_RING, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel led_outer_ring_neo(LED_COUNT_OUTER_RING, PIN_LED_OUTER_RING, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel led_inner_ring_neo(LED_COUNT_INNER_RING, PIN_LED_INNER_RING, NEO_GRB + NEO_KHZ800);
 
 #endif

@@ -44,8 +44,8 @@ void state_reset()
 
 	resetStateCounters();
 
-	colorFill( led_outer_ring, led_outer_ring.Color(0, 0, 0) );
-	colorFill( led_inner_ring, led_inner_ring.Color(0, 0, 0) );          
+	//colorFill( led_outer_ring, led_outer_ring.Color(0, 0, 0), false );
+	//colorFill( led_inner_ring, led_inner_ring.Color(0, 0, 0), false );          
 }
 
 void state0()
@@ -60,7 +60,7 @@ void state1()
 {
 	const uint8_t stateIdx = 1;
 	
-	fadeInRed( state_counter[stateIdx] );
+	//fadeInRed( state_counter[stateIdx] );
   
   servoDropPetal(SERVO_PETAL_1, state_counter[stateIdx]);
     
@@ -71,7 +71,7 @@ void state2()
 {
 	const uint8_t stateIdx = 2;
 	
-	fadeOutPurple( state_counter[stateIdx] );
+	//fadeOutPurple( state_counter[stateIdx] );
 
   servoDropPetal(SERVO_PETAL_2, state_counter[stateIdx]);
     
@@ -82,7 +82,7 @@ void state3()
 {
 	const uint8_t stateIdx = 3;
 	
-	chaseBackward(state_counter[stateIdx]);
+	//chaseBackward(state_counter[stateIdx]);
  
   servoDropPetal(SERVO_PETAL_3, state_counter[stateIdx]);
     
@@ -93,7 +93,7 @@ void state4()
 {
 	const uint8_t stateIdx = 4;
 	
-	wipeRed(state_counter[stateIdx], 40, true); // forward
+	//wipeRed(state_counter[stateIdx], 40, true); // forward
   
   servoDropPetal(SERVO_PETAL_4, state_counter[stateIdx]);
     			
@@ -104,7 +104,7 @@ void state5()
 {
 	const uint8_t stateIdx = 5;
 	
-	wipeRed(state_counter[stateIdx], 20, false); // backward
+	//wipeRed(state_counter[stateIdx], 20, false); // backward
 			
 	state_counter[stateIdx]++;
 }
@@ -113,7 +113,7 @@ void state6()
 {
 	const uint8_t stateIdx = 6;
 
-	clearLeds();
+	//clearLeds();
 	
 	if( state_counter[stateIdx] == 0 )
 		servoDropPetal(SERVO_PETAL_1, state_counter[stateIdx]);
