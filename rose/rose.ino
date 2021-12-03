@@ -89,7 +89,8 @@ uint32_t zeroCount = 0;
 void loop() {
 
     handleDMX();
-    
+
+    /*
 	if( checkInput_ms > 50 )
 	{
 		// read RC states
@@ -200,7 +201,12 @@ void loop() {
 	}
 
 	stateMachine(state);
-	
+
+  */
+
+  //colorFill( led_inner_ring, Adafruit_NeoPixel::Color(255, 0, 0) );
+  //colorFill( led_outer_ring, Adafruit_NeoPixel::Color(255, 0, 0) );
+  
 	// Blink the built-in LED
 	if( blink_ms > 1000 )
 	{
