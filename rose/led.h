@@ -11,6 +11,10 @@ struct Led
 		ledCounter 		= 0;
 		ledElapsed_ms 	= 0;
 	};
+	void clear()
+	{
+		led->clear();
+	}
 	
 	uint32_t newColor;
 	uint32_t prevColor;

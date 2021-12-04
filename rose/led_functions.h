@@ -190,15 +190,30 @@ void wipeRed(const uint32_t state_counter, const uint16_t wipeInterval_ms, bool 
 
 void colorFill( Led & led, const uint32_t & color )
 {
-	if( color != led.prevColor )
+	if( led.ledElapsed_ms > 50)
 	{
-		led.prevColor = color;
-		
-		const uint32_t gammaColor = Adafruit_NeoPixel::gamma32(color);
-		
+		//led.prevColor = color;
+				
 		for(uint32_t i=0; i < led.led->numPixels(); i++) // For each pixel in strip...
-			led.led->setPixelColor(i, gammaColor); //  Set pixel's color (in RAM)	
+			led.led->setPixelColor(i, color);
 		led.led->show();
+		
+		// reset the timer
+		led.ledElapsed_ms = 0;
+	}
+}
+
+void colorWipe( Led & led, const uint32_t & color, uint8_t wait_ms )
+{
+	if( led.ledElapsed_ms >= wait_ms && led.ledCounter < led.led->numPixels() )
+	{		
+		led.led->setPixelColor(led.ledCounter, color);
+		led.led->show();
+				
+		// increment the pixel we color each time through
+		led.ledCounter++;
+		// reset the timer
+		led.ledElapsed_ms = 0;	
 	}
 }
 
@@ -252,8 +267,23 @@ void led_state_machine(const uint8_t state)
 	switch( state )
 	{
 		case 0: 
+			if( led_new_state == true )
+			{
+				Serial.println(F("LED State 0"));
+			}
 			colorFill( led_inner_ring, led_inner_ring_new_color );
 			colorFill( led_outer_ring, led_outer_ring_new_color );
+			break;
+		case 5:
+			if( led_new_state == true )
+			{
+				led_inner_ring.newState();
+				led_outer_ring.newState();
+				led_inner_ring.clear();
+				led_outer_ring.clear();
+			}
+			colorWipe( led_inner_ring, led_inner_ring_new_color, 500 );
+			colorWipe( led_outer_ring, led_outer_ring_new_color, 500 );
 			break;
 		case 10: 
 			//theaterChase( led_inner_ring, led_inner_ring_new_color, 50 );
