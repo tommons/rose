@@ -37,7 +37,7 @@ const uint32_t SERVO_PERIOD_US  = 1e6*1/SERVO_FREQ_HZ; // Analog servos run at ~
 const uint16_t SERVO_TICK_MIN   = 4096 * (float)SERVO_PW_MIN_US/(float)SERVO_PERIOD_US;
 const uint16_t SERVO_TICK_MAX   = 4096 * (float)SERVO_PW_MAX_US/(float)SERVO_PERIOD_US;
 
-#define DELAY_MS 1
+#define DELAY_MS 10
 
 // called this way, it uses the default address 0x40
 Adafruit_PWMServoDriver servos = Adafruit_PWMServoDriver();
@@ -55,5 +55,7 @@ Adafruit_PWMServoDriver servos = Adafruit_PWMServoDriver();
 
 Adafruit_NeoPixel led_outer_ring_neo(LED_COUNT_OUTER_RING, PIN_LED_OUTER_RING, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel led_inner_ring_neo(LED_COUNT_INNER_RING, PIN_LED_INNER_RING, NEO_GRB + NEO_KHZ800);
+Led led_outer_ring;
+Led led_inner_ring;
 
 #endif

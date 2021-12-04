@@ -20,9 +20,12 @@ void handleDMX()
 		const uint32_t dmx_led1_color = Adafruit_NeoPixel::Color(dmx_led1_r_value, dmx_led1_g_value, dmx_led1_b_value);
 		const uint32_t dmx_led2_color = Adafruit_NeoPixel::Color(dmx_led2_r_value, dmx_led2_g_value, dmx_led2_b_value);
 		
-		colorFill( led_inner_ring, dmx_led1_color );
-		colorFill( led_outer_ring, dmx_led2_color );
-				
+		//colorFill( led_inner_ring, dmx_led1_color );
+		//colorFill( led_outer_ring, dmx_led2_color );
+		led_state 					= dmx_control_value;
+		led_inner_ring_new_color 	= dmx_led1_color;
+		led_outer_ring_new_color 	= dmx_led2_color;
+		
 		Serial.println("DMX Update:");
 		Serial.print("DMX Control: "); 	Serial.println(dmx_control_value);
 		Serial.print("DMX LED1 R: "); 	Serial.println(dmx_led1_r_value);

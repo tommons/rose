@@ -11,6 +11,8 @@ bool     led_new_state = true;
 uint32_t led_inner_ring_new_color = 0;
 uint32_t led_outer_ring_new_color = 0;
 
+
+
 /*
 uint8_t wipeForward8_v[8];
 uint8_t wipeBackward8_v[8];
@@ -186,17 +188,17 @@ void wipeRed(const uint32_t state_counter, const uint16_t wipeInterval_ms, bool 
 }	
 */
 
-void colorFill( Adafruit_NeoPixel & led, const uint32_t color )
+void colorFill( Led & led, const uint32_t & color )
 {
-	//if( color != led.prevColor )
+	if( color != led.prevColor )
 	{
-		//led.prevColor = color;
+		led.prevColor = color;
 		
 		const uint32_t gammaColor = Adafruit_NeoPixel::gamma32(color);
 		
-		for(uint32_t i=0; i < led.numPixels(); i++) // For each pixel in strip...
-			led.setPixelColor(i, gammaColor); //  Set pixel's color (in RAM)	
-		led.show();
+		for(uint32_t i=0; i < led.led->numPixels(); i++) // For each pixel in strip...
+			led.led->setPixelColor(i, gammaColor); //  Set pixel's color (in RAM)	
+		led.led->show();
 	}
 }
 
@@ -244,14 +246,14 @@ void led_state_machine(const uint8_t state)
 	if( state != led_prev_state )
 	{
 		led_new_state = true;
-		//led_inner_ring.newState();
-		//led_outer_ring.newState();
+		led_inner_ring.newState();
+		led_outer_ring.newState();
 	}
 	switch( state )
 	{
 		case 0: 
-			colorFill( led_inner_ring_neo, led_inner_ring_new_color );
-			colorFill( led_outer_ring_neo, led_outer_ring_new_color );			
+			colorFill( led_inner_ring, led_inner_ring_new_color );
+			colorFill( led_outer_ring, led_outer_ring_new_color );
 			break;
 		case 10: 
 			//theaterChase( led_inner_ring, led_inner_ring_new_color, 50 );
@@ -260,6 +262,7 @@ void led_state_machine(const uint8_t state)
 
 	}		
 
+	led_prev_state = state;
 	led_new_state = false;
 }
 	

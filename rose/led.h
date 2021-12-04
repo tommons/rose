@@ -4,6 +4,23 @@
 #include <Adafruit_NeoPixel.h>
 #include <elapsedMillis.h>
 
+struct Led 
+{
+	void newState()
+	{
+		ledCounter 		= 0;
+		ledElapsed_ms 	= 0;
+	};
+	
+	uint32_t newColor;
+	uint32_t prevColor;
+	
+	Adafruit_NeoPixel * led;
+	elapsedMillis 		ledElapsed_ms;
+	uint32_t 			ledCounter;
+};
+
+/*
 class Led
 {
   public:
@@ -30,5 +47,6 @@ class Led
 	uint32_t ledCounter;
 	
 };
+*/
 
 #endif
