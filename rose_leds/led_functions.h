@@ -20,6 +20,10 @@ Led led_outer_ring;
 Led led_inner_ring;
 long rainbow_firstPixelHue = 0;
 
+#define WIPE_CHASE_LENGTH 8
+uint8_t wipeForward_value[WIPE_CHASE_LENGTH];
+uint8_t wipeBackward_value[WIPE_CHASE_LENGTH];
+
 void setupLeds()
 {	
 	led_inner_ring.color  		= 0;
@@ -37,153 +41,31 @@ void setupLeds()
 	led_outer_ring_neo.clear();
 	led_outer_ring_neo.setBrightness(LED_MAX_BRIGHTNESS); // Set BRIGHTNESS (max = 255)
 	led_outer_ring_neo.show();            // Turn OFF all pixels ASAP
-}
-
-/*
-uint8_t wipeForward8_v[8];
-uint8_t wipeBackward8_v[8];
-
-elapsedMillis ledElapsed1_ms = 0;
-elapsedMillis ledElapsed2_ms = 0;
-elapsedMillis ledUpdate1_ms = 0;
-elapsedMillis ledUpdate2_ms = 0;
-const uint16_t ledFadeUpdate_ms = 50;
-
-uint32_t ledCounter1 = 0;
-uint32_t ledCounter2 = 0;
-
-
-void led_setup()
-{
-	for( int i=0; i < 8; i++ )
+	
+	// initialize wipe value arrays
+	for( uint8_t i=0; i < WIPE_CHASE_LENGTH; i++ )
 	{
 		// dim to bright
-		wipeForward8_v[i] = 255 / (7-i+1);
+		wipeForward_value[i] = 255L / (WIPE_CHASE_LENGTH-i);
 		// bright to dim
-		wipeBackward8_v[i] = 255 / (i+1);
-	}
+		wipeBackward_value[i] = 255L / (i+1);
+
+		#if 0
+		Serial.print(i); Serial.print(" "); 
+		Serial.print(wipeForward_value[i]); Serial.print(" "); 
+		Serial.println(wipeBackward_value[i]);
+		#endif
+	}	
 }
-	
-void chase( Adafruit_NeoPixel & led, 
-			elapsedMillis & elapsed_ms, 
-			uint32_t color1,
-			uint32_t color2,
-			const uint32_t interval_ms,
-			const uint8_t chaseOffset,
-			uint32_t & ledCounter,
-			boolean forwardDirection )
+
+void clearLeds( Led & led )
 {
-	if( elapsed_ms > interval_ms )
+	if( led.new_state == true )
 	{
-		elapsed_ms = 0;
-
-		for(uint32_t i=0; i < led.numPixels(); i++) // For each pixel in strip...
-			led.setPixelColor(i, led.gamma32(color1));
-			
-		uint32_t chaseStart 	= ledCounter % chaseOffset;
-		
-		if( forwardDirection == false )
-		{
-			chaseStart = (chaseOffset-1) - chaseStart;
-		}
-		
-		for(uint32_t i=chaseStart; i < led.numPixels(); i += chaseOffset)
-			led.setPixelColor(i, led.gamma32(color2));
-				
-		led.show();	
-
-		ledCounter++;
+		led.led->clear();
+		led.led->show();
 	}
 }
-
-void wipe( Adafruit_NeoPixel & led, 
-			elapsedMillis & elapsed_ms, 
-			const uint16_t h, 
-			const uint8_t s, 
-			const uint8_t v,
-			const uint32_t interval_ms,
-			const uint8_t wipeLength,
-			uint32_t & ledCounter,
-			boolean forwardDirection )
-{
-	if( elapsed_ms > interval_ms )
-	{
-		elapsed_ms = 0;
-		
-		led.clear();
-		const uint32_t numPixels = led.numPixels();
-		
-		uint32_t wipeStart 	= ledCounter % numPixels;
-		if( forwardDirection == false )
-		{
-			wipeStart = (numPixels-1) - wipeStart;
-		}
-		
-		int pixel = 0;
-		
-		for( uint32_t i=0; i < wipeLength; i++ )
-		{
-			// calculate pixel index behind the starting index
-			if( forwardDirection == true )
-				pixel = wipeStart - i;
-			else
-				pixel = wipeStart + i;
-			
-			if( pixel < 0 )
-			{
-				pixel += numPixels;
-			}
-			else if( pixel >= numPixels )
-			{
-				pixel -= numPixels;
-			}
-			
-			// dim pixel in relation to how far behind the front
-			uint8_t v1 = v / (i+1);
-			
-			led.setPixelColor(pixel, led.gamma32(led.ColorHSV(h, s, v1)));
-		}
-						
-		led.show();	
-
-		ledCounter++;
-	}
-}
-
-void chaseBackward(const uint32_t state_counter)
-{
-	const uint32_t chaseInterval_ms = 50;
-	const uint8_t chaseOffset 		= 3;
-	if( state_counter == 0 )
-	{
-		ledElapsed1_ms = 0;
-		ledElapsed2_ms = 0;
-		ledUpdate1_ms = 0;
-		ledUpdate2_ms = 0;
-		ledCounter1 = 0;
-		ledCounter2 = 0;
-	}
-	
-	chase( led_outer_ring, 
-			ledElapsed1_ms,
-			led_outer_ring.Color(0,255,0), // green
-			led_outer_ring.Color(255,0,0), //red
-			chaseInterval_ms,
-			chaseOffset,
-			ledCounter1,
-			false);
-  
-  	chase( led_inner_ring, 
-			ledElapsed2_ms,
-			led_outer_ring.Color(64,64,64), // dimmer white
-			led_outer_ring.Color(255,255,255), // white
-			chaseInterval_ms,
-			chaseOffset,
-			ledCounter2,
-			false );
-}
-	
-*/
 
 void colorFill( Led & led, const uint32_t & color )
 {
@@ -320,6 +202,84 @@ void theaterChaseRainbow( Led & led, const uint32_t color, const uint16_t wait_m
 	}
 }
 
+void wipeChaseForward( Led & led, const uint32_t & color, uint8_t wait_ms )
+{
+	if( led.ledElapsed_ms >= wait_ms )
+	{		
+		const uint8_t numPixels = led.led->numPixels();
+		const uint8_t r = color >> 16 & 0xFF;
+		const uint8_t g = color >> 8  & 0xFF;
+		const uint8_t b = color       & 0xFF;
+		
+		if( led.ledCounter >= numPixels )
+			led.ledCounter = 0;
+		
+		led.led->clear();
+		
+		const uint8_t startPixel = led.ledCounter;
+		
+		for( uint8_t i = 0; i < WIPE_CHASE_LENGTH; i++ )
+		{
+			const uint8_t p 				= (startPixel+i) % numPixels;
+			const uint8_t wipeBrightness 	= wipeForward_value[i];;
+			
+			const uint8_t r1 				= ( r * wipeBrightness ) >> 8;
+			const uint8_t g1 				= ( g * wipeBrightness ) >> 8;
+			const uint8_t b1 				= ( b * wipeBrightness ) >> 8;
+			
+			led.led->setPixelColor(p, r1, g1, b1);
+		}
+		
+		led.led->show();
+
+		// increment the pixel we color each time through
+		led.ledCounter++;
+		// reset the timer
+		led.ledElapsed_ms = 0;	
+	}
+}
+
+void wipeChaseBackward( Led & led, const uint32_t & color, uint8_t wait_ms )
+{
+	if( led.ledElapsed_ms >= wait_ms )
+	{		
+		const uint8_t numPixels = led.led->numPixels();
+		const uint8_t r = color >> 16 & 0xFF;
+		const uint8_t g = color >> 8  & 0xFF;
+		const uint8_t b = color       & 0xFF;
+		
+		if( led.ledCounter >= numPixels )
+			led.ledCounter = 0;
+		
+		led.led->clear();
+		
+		const uint8_t startPixel = led.ledCounter;
+		
+		for( uint8_t i = 0; i < WIPE_CHASE_LENGTH; i++ )
+		{
+			const uint8_t p 				= (startPixel+i) % numPixels;
+			const uint8_t wipeBrightness 	= wipeBackward_value[i];;
+		
+			const uint8_t r1 				= ( r * wipeBrightness ) >> 8;
+			const uint8_t g1 				= ( g * wipeBrightness ) >> 8;
+			const uint8_t b1 				= ( b * wipeBrightness ) >> 8;
+			
+			led.led->setPixelColor(p, r1, g1, b1);
+		}
+		
+		led.led->show();
+					
+		// increment the pixel we color each time through
+		if( led.ledCounter == 0 )
+			led.ledCounter = numPixels-1;
+		else
+			led.ledCounter--;
+		
+		// reset the timer
+		led.ledElapsed_ms = 0;	
+	}
+}
+
 void handleLed(Led & led)
 {
 	// avoid race-conditions with the dmx handler and get a copy of the state
@@ -361,7 +321,32 @@ void handleLed(Led & led)
 		case 40:
 			theaterChaseRainbow(led, led.color_new, 50);
 			break;
+		case 50:
+			wipeChaseForward( led, led.color_new, 2000 / 24 );
+			break;			
+		case 51:
+			wipeChaseForward( led, led.color_new, 1000 / 24 );
+			break;
+		case 52:
+			wipeChaseForward( led, led.color_new, 500 / 24 );
+			break;	
+		case 53:
+			wipeChaseForward( led, led.color_new, 200 / 24 );
+			break;
+		case 60:
+			wipeChaseBackward( led, led.color_new, 2000 / 24 );
+			break;
+		case 61:
+			wipeChaseBackward( led, led.color_new, 1000 / 24 );
+			break;
+		case 62:
+			wipeChaseBackward( led, led.color_new, 500 / 24 );
+			break;	
+		case 63:
+			wipeChaseBackward( led, led.color_new, 200 / 24 );
+			break;	
 		default:
+			clearLeds(led);
 			break;
 	}		
 

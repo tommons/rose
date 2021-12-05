@@ -48,10 +48,13 @@ void receiveI2CEvent(int howMany)
 				led_outer_ring.stateElapsed_ms = 0;			
 			led_outer_ring.state_new = control2;
 			
+			#ifdef ROSE_DEBUG
 			Serial.print("control1 "); Serial.println(control1);
 			Serial.print("color1 "); Serial.println(color1,HEX);
 			Serial.print("control2 "); Serial.println(control2);
 			Serial.print("color2 "); Serial.println(color2,HEX);
+			#endif 
+			
 			break;
 		default:
 			while(Wire.available())
@@ -60,7 +63,6 @@ void receiveI2CEvent(int howMany)
 			}
 		break;
 	}
-	//Serial.println(F("Done New Data "));
 }
 
 void setupDMXI2C()
