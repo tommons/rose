@@ -1,5 +1,8 @@
 #include <Wire.h>
 
+//#define ROSE_DEBUG 
+#undef ROSE_DEBUG
+
 #include "dmx.h"
 #include "button.h"
 #include "blink.h"

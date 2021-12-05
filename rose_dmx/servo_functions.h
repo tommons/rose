@@ -48,10 +48,12 @@ void setServo( const uint8_t servoNumber, const uint8_t angle )
 {
 	const uint16_t pwm = map( angle, SERVO_MIN_ANGLE, SERVO_MAX_ANGLE, SERVO_TICK_MIN, SERVO_TICK_MAX );
 
+	#ifdef ROSE_DEBUG
 	Serial.print("setServo number: "); Serial.print(servoNumber);
 	Serial.print(" angle: "); Serial.print(angle);
 	Serial.print(" pwm: "); Serial.print(pwm);
 	Serial.println("");
+	#endif 
 	
 	servos.setPWM(servoNumber, 0, pwm );
 }

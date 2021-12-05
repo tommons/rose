@@ -19,8 +19,6 @@
 #define DMX_LED2_B_CHANNEL 		DMX_START_CHANNEL + 7
 #define DMX_SERVO_CHANNEL  		DMX_START_CHANNEL + 8
 
-#define DMX_DEBUG 
-
 elapsedMillis dmx_elapsed_ms;
 #define DMX_READ_ELAPSED_MS 50
 
@@ -33,14 +31,15 @@ void setupDMX()
 
 void handleDMX()
 {
-	// check for new dmx instruction
-	if( DMXSerial.dataUpdated() ) 
+	// Only process updates so often
+	if( dmx_elapsed_ms > DMX_READ_ELAPSED_MS )
 	{
-		DMXSerial.resetUpdated();
-		
-		// Only process updates so often
-		if( dmx_elapsed_ms > DMX_READ_ELAPSED_MS )
+		// check for new dmx instruction
+		if( DMXSerial.dataUpdated() ) 
 		{
+			DMXSerial.resetUpdated();
+		
+
 			dmx_elapsed_ms = 0;
 			
 			// Read our values of interest from the DMX bus
@@ -72,7 +71,7 @@ void handleDMX()
 			servoState = dmx_servo_value;
 			
 			// Print for debug
-			#ifdef DMX_DEBUG
+			#ifdef ROSE_DEBUG
 			Serial.println(F("DMX Update:"));
 			Serial.print(F("DMX Control1: ")); 		Serial.println(dmx_control1_value);
 			Serial.print(F("DMX LED1 R: ")); 		Serial.println(dmx_led1_r_value);
