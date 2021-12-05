@@ -223,11 +223,12 @@ void colorWipe( Led & led, const uint32_t & color, uint8_t wait_ms )
 
 void theaterChase(Led & led, const uint32_t color, const uint16_t wait_ms) 
 {
-	if( led.ledCounter > 2 )
-		led.ledCounter = 0;
-		
+
 	if( led.ledElapsed_ms >= wait_ms )
 	{
+		if( led.ledCounter > 2 )
+			led.ledCounter = 0;
+		
 		led.ledElapsed_ms = 0;
 		
 		led.led->clear();         //   Set all pixels in RAM to 0 (off)
@@ -252,8 +253,10 @@ void rainbow( Led & led, const uint16_t wait_ms )
 	{
 		const uint8_t numPixels = led.led->numPixels();
 		
-		if( rainbow_firstPixelHue >= 5*65536 )
+		if( rainbow_firstPixelHue >= 65536 )
 			rainbow_firstPixelHue = 0;
+		
+		const long HuePerPixel = 65536L / numPixels;
 		
 		for(uint8_t i=0; i < numPixels; i++) 
 		{ 
@@ -261,7 +264,7 @@ void rainbow( Led & led, const uint16_t wait_ms )
 			// Offset pixel hue by an amount to make one full revolution of the
 			// color wheel (range of 65536) along the length of the strip
 			// (strip.numPixels() steps):
-			int pixelHue = rainbow_firstPixelHue + (i * 65536L / numPixels);
+			int pixelHue = rainbow_firstPixelHue + (i * HuePerPixel);
 			
 			// strip.ColorHSV() can take 1 or 3 arguments: a hue (0 to 65535) or
 			// optionally add saturation and value (brightness) (each 0 to 255).
@@ -276,6 +279,41 @@ void rainbow( Led & led, const uint16_t wait_ms )
 		rainbow_firstPixelHue += 256;
 		led.ledElapsed_ms = 0;
 		
+	}
+}
+
+// Rainbow-enhanced theater marquee. Pass delay time (in ms) between frames.
+void theaterChaseRainbow( Led & led, const uint16_t wait_ms ) 
+{
+	if( led.ledElapsed_ms >= wait_ms )
+	{
+		if( led.ledCounter > 2 )
+			led.ledCounter = 0;
+	
+		if( rainbow_firstPixelHue >= 65536 )
+			rainbow_firstPixelHue = 0;     // First pixel starts at red (hue 0)
+	
+		const uint8_t numPixels = led.led->numPixels();
+		const long HuePerPixel = 65536L / numPixels;
+		
+		//  'b' counts from 0 to 2...
+		led.led->clear();         //   Set all pixels in RAM to 0 (off)
+		
+		// 'c' counts up from 'b' to end of strip in increments of 3...
+		for(uint8_t c = led.ledCounter; c < numPixels; c += 3) 
+		{
+			// hue of pixel 'c' is offset by an amount to make one full
+			// revolution of the color wheel (range 65536) along the length
+			// of the strip (strip.numPixels() steps):
+			int      hue   = rainbow_firstPixelHue + c * HuePerPixel;
+			uint32_t color = Adafruit_NeoPixel::gamma32(Adafruit_NeoPixel::ColorHSV(hue)); // hue -> RGB
+			led.led->setPixelColor(c, color); // Set pixel 'c' to value 'color'
+		}
+		led.led->show();                // Update strip with new contents
+		
+		rainbow_firstPixelHue += 65536 / 90; // One cycle of color wheel over 90 frames
+		led.ledCounter++;
+		led.ledElapsed_ms = 0;
 	}
 }
 
@@ -316,6 +354,11 @@ void handleLed(Led & led)
 			break;
 		case 30: 
 			rainbow( led, 10 );
+			break;
+		case 40:
+			theaterChaseRainbow(led, 50);
+			break;
+		default:
 			break;
 	}		
 
