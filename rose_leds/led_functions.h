@@ -18,6 +18,7 @@ Adafruit_NeoPixel led_outer_ring_neo(LED_COUNT_OUTER_RING, PIN_LED_OUTER_RING, N
 Adafruit_NeoPixel led_inner_ring_neo(LED_COUNT_INNER_RING, PIN_LED_INNER_RING, NEO_GRB + NEO_KHZ800);
 Led led_outer_ring;
 Led led_inner_ring;
+long rainbow_firstPixelHue = 0;
 
 void setupLeds()
 {	
@@ -205,7 +206,7 @@ void colorWipe( Led & led, const uint32_t & color, uint8_t wait_ms )
 	if( led.new_state == true )
 	{
 		led.led->clear();
-		Serial.println(F("color wipe reset"));
+		//Serial.println(F("color wipe reset"));
 	}
 	
 	if( led.ledElapsed_ms >= wait_ms && led.ledCounter < led.led->numPixels() )
@@ -220,45 +221,64 @@ void colorWipe( Led & led, const uint32_t & color, uint8_t wait_ms )
 	}
 }
 
-/*
-void colorFill( Led & led, const uint32_t color )
+void theaterChase(Led & led, const uint32_t color, const uint16_t wait_ms) 
 {
-	led.newColor = color;
-	
-	if( color != led.prevColor )
-	{
-		led.prevColor = color;
-		
-		const uint32_t gammaColor = Adafruit_NeoPixel::gamma32(color);
-		
-		for(uint32_t i=0; i < led.numPixels(); i++) // For each pixel in strip...
-			led.setPixelColor(i, gammaColor); //  Set pixel's color (in RAM)	
-		led.show();
-		
-		Serial.print(led.name_); Serial.println(" Color Fill");
-	}
-}
-
-void theaterChase(Led & led, const uint32_t color, const uint32_t wait_ms) 
-{
-	if( led.ledCounter > 2)
+	if( led.ledCounter > 2 )
 		led.ledCounter = 0;
 		
 	if( led.ledElapsed_ms >= wait_ms )
 	{
 		led.ledElapsed_ms = 0;
-		led.clear();         //   Set all pixels in RAM to 0 (off)
+		
+		led.led->clear();         //   Set all pixels in RAM to 0 (off)
 		// 'c' counts up from 'b' to end of strip in steps of 3...
-		for(int c=led.ledCounter; c < led.numPixels(); c += 3) 
+		for(uint8_t c=led.ledCounter; c < led.led->numPixels(); c += 3) 
 		{
-			led.setPixelColor(c, color); // Set pixel 'c' to value 'color'
+			led.led->setPixelColor(c, color); // Set pixel 'c' to value 'color'
 		}
-		led.show(); // Update strip with new contents
+		led.led->show(); // Update strip with new contents
 
 		led.ledCounter++;
 	}
 }
-*/
+
+void rainbow( Led & led, const uint16_t wait_ms ) 
+{
+	// Hue of first pixel runs 5 complete loops through the color wheel.
+	// Color wheel has a range of 65536 but it's OK if we roll over, so
+	// just count from 0 to 5*65536. Adding 256 to firstPixelHue each time
+	// means we'll make 5*65536/256 = 1280 passes through this outer loop:
+	if( led.ledElapsed_ms >= wait_ms )
+	{
+		const uint8_t numPixels = led.led->numPixels();
+		
+		if( rainbow_firstPixelHue >= 5*65536 )
+			rainbow_firstPixelHue = 0;
+		
+		for(uint8_t i=0; i < numPixels; i++) 
+		{ 
+			// For each pixel in strip...
+			// Offset pixel hue by an amount to make one full revolution of the
+			// color wheel (range of 65536) along the length of the strip
+			// (strip.numPixels() steps):
+			int pixelHue = rainbow_firstPixelHue + (i * 65536L / numPixels);
+			
+			// strip.ColorHSV() can take 1 or 3 arguments: a hue (0 to 65535) or
+			// optionally add saturation and value (brightness) (each 0 to 255).
+			// Here we're using just the single-argument hue variant. The result
+			// is passed through strip.gamma32() to provide 'truer' colors
+			// before assigning to each pixel:
+			led.led->setPixelColor(i, Adafruit_NeoPixel::gamma32(Adafruit_NeoPixel::ColorHSV(pixelHue)));
+		}
+		
+		led.led->show(); // Update strip with new contents
+
+		rainbow_firstPixelHue += 256;
+		led.ledElapsed_ms = 0;
+		
+	}
+}
+
 void handleLed(Led & led)
 {
 	// avoid race-conditions with the dmx handler and get a copy of the state
@@ -291,12 +311,12 @@ void handleLed(Led & led)
 		case 13: // Color Wipe
 			colorWipe( led, led.color_new, 50 );			
 			break;	
-			
 		case 20: 
-			//theaterChase( led_inner_ring, led_inner_ring_new_color, 50 );
-			//theaterChase( led_outer_ring, led_outer_ring_new_color, 50 );
+			theaterChase( led, led.color_new, 50 );
 			break;
-
+		case 30: 
+			rainbow( led, 10 );
+			break;
 	}		
 
 	led.new_state 	= false;
