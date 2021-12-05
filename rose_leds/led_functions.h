@@ -243,7 +243,7 @@ void theaterChase(Led & led, const uint32_t color, const uint16_t wait_ms)
 	}
 }
 
-void rainbow( Led & led, const uint16_t wait_ms ) 
+void rainbow( Led & led, const uint32_t color, const uint16_t wait_ms ) 
 {
 	// Hue of first pixel runs 5 complete loops through the color wheel.
 	// Color wheel has a range of 65536 but it's OK if we roll over, so
@@ -257,7 +257,8 @@ void rainbow( Led & led, const uint16_t wait_ms )
 			rainbow_firstPixelHue = 0;
 		
 		const long HuePerPixel = 65536L / numPixels;
-		
+		const uint8_t sat = 255;
+		const uint8_t val = color >> 16 & 0xFF; // red channel is value
 		for(uint8_t i=0; i < numPixels; i++) 
 		{ 
 			// For each pixel in strip...
@@ -271,7 +272,7 @@ void rainbow( Led & led, const uint16_t wait_ms )
 			// Here we're using just the single-argument hue variant. The result
 			// is passed through strip.gamma32() to provide 'truer' colors
 			// before assigning to each pixel:
-			led.led->setPixelColor(i, Adafruit_NeoPixel::gamma32(Adafruit_NeoPixel::ColorHSV(pixelHue)));
+			led.led->setPixelColor(i, Adafruit_NeoPixel::gamma32( Adafruit_NeoPixel::ColorHSV(pixelHue, sat, val) ) );
 		}
 		
 		led.led->show(); // Update strip with new contents
@@ -283,7 +284,7 @@ void rainbow( Led & led, const uint16_t wait_ms )
 }
 
 // Rainbow-enhanced theater marquee. Pass delay time (in ms) between frames.
-void theaterChaseRainbow( Led & led, const uint16_t wait_ms ) 
+void theaterChaseRainbow( Led & led, const uint32_t color, const uint16_t wait_ms ) 
 {
 	if( led.ledElapsed_ms >= wait_ms )
 	{
@@ -295,6 +296,8 @@ void theaterChaseRainbow( Led & led, const uint16_t wait_ms )
 	
 		const uint8_t numPixels = led.led->numPixels();
 		const long HuePerPixel = 65536L / numPixels;
+		const uint8_t sat = 255;
+		const uint8_t val = color >> 16 & 0xFF; // red channel is value
 		
 		//  'b' counts from 0 to 2...
 		led.led->clear();         //   Set all pixels in RAM to 0 (off)
@@ -306,7 +309,7 @@ void theaterChaseRainbow( Led & led, const uint16_t wait_ms )
 			// revolution of the color wheel (range 65536) along the length
 			// of the strip (strip.numPixels() steps):
 			int      hue   = rainbow_firstPixelHue + c * HuePerPixel;
-			uint32_t color = Adafruit_NeoPixel::gamma32(Adafruit_NeoPixel::ColorHSV(hue)); // hue -> RGB
+			uint32_t color = Adafruit_NeoPixel::gamma32( Adafruit_NeoPixel::ColorHSV(hue, sat, val) ); // hue -> RGB
 			led.led->setPixelColor(c, color); // Set pixel 'c' to value 'color'
 		}
 		led.led->show();                // Update strip with new contents
@@ -353,10 +356,10 @@ void handleLed(Led & led)
 			theaterChase( led, led.color_new, 50 );
 			break;
 		case 30: 
-			rainbow( led, 10 );
+			rainbow( led, led.color_new, 10 );
 			break;
 		case 40:
-			theaterChaseRainbow(led, 50);
+			theaterChaseRainbow(led, led.color_new, 50);
 			break;
 		default:
 			break;
