@@ -1,25 +1,42 @@
 #include <Wire.h>
 
-//#define ROSE_DEBUG 
 #undef ROSE_DEBUG
+//#define ROSE_DEBUG 
+#define NO_SERVOS
 
 #include "dmx.h"
 #include "button.h"
 #include "blink.h"
 #include "servo_functions.h"
+#include "indicator.h"
 
 void setup() {
+  #ifdef ROSE_DEBUG
   Serial.begin(9600);
-  
+  while(!Serial);
+  #endif
+
+  #ifdef ROSE_DEBUG
+  Serial.println("start setup");
+  #endif
+
   setupDMX();
   setupButton();
   setupBlink();
-  setupServos();
+  //setupServos();
+  //setupIndicator();
+
+  #ifdef ROSE_DEBUG
+  Serial.println("done setup");  
+  #endif
+  
+  
 }
 
 void loop() {
   handleDMX();
   handleButton();
   handleBlink();
-  handleServos();
+  //handleServos();
+  //handleIndicator();
 }

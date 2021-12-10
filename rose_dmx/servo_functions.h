@@ -54,8 +54,10 @@ void setServo( const uint8_t servoNumber, const uint8_t angle )
 	Serial.print(" pwm: "); Serial.print(pwm);
 	Serial.println("");
 	#endif 
-	
+
+  #ifndef NO_SERVOS
 	servos.setPWM(servoNumber, 0, pwm );
+  #endif
 }
 
 void servoHoldPetal( const uint8_t servoNumber, const uint32_t & state_counter )
@@ -69,10 +71,12 @@ void servoHoldPetal( const uint8_t servoNumber, const uint32_t & state_counter )
 
 void setupServos()
 {
+  #ifndef NO_SERVOS
 	servos.begin();
 	servos.setOscillatorFrequency(SERVO_OSC_FREQ_HZ);
 	servos.setPWMFreq(SERVO_FREQ_HZ);  // Analog servos run at ~50 Hz updates
-	
+	#endif
+  
 	for( uint8_t servoIdx=0; servoIdx < NUM_SERVOS; servoIdx++ )
 		servoHoldPetal( servoIdx, 0 );
 	

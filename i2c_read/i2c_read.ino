@@ -45,21 +45,29 @@ void receiveEvent(int howMany)
 {
 
   byte msgID = Wire.read();
-  //Serial.print(F("New Data "));
-  //Serial.print(msgID);
+  Serial.print(F("New Data "));
+  Serial.println(msgID);
   //Serial.print(" ");
   //Serial.println(elapsed);
   
   switch( msgID )
   {
     case 2:
-      control = Wire.read();
-      red     = Wire.read();
-      green   = Wire.read();
-      blue    = Wire.read();
-      color   = strip.Color(red, green, blue);
-      Serial.println(control);
-      newLedData = true;
+      const uint8_t control1  = Wire.read();
+      const uint8_t red1      = Wire.read();
+      const uint8_t green1    = Wire.read();
+      const uint8_t blue1     = Wire.read();
+      const uint8_t control2  = Wire.read();
+      const uint8_t red2      = Wire.read();
+      const uint8_t green2    = Wire.read();
+      const uint8_t blue2     = Wire.read();
+      const uint8_t servo     = Wire.read();  
+
+      Serial.print("control1 "); Serial.println(control1);
+      Serial.print("red1 "); Serial.println(red1,HEX);
+      Serial.print("control2 "); Serial.println(control2);
+      Serial.print("red2 "); Serial.println(red2,HEX);
+      
       break;
     default:
       while(Wire.available())
