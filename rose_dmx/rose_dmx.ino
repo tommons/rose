@@ -1,7 +1,7 @@
 #include <Wire.h>
 
 #undef ROSE_DEBUG
-//#define ROSE_DEBUG 
+#define ROSE_DEBUG 
 #define NO_SERVOS
 
 #include "dmx.h"
@@ -24,7 +24,7 @@ void setup() {
   setupButton();
   setupBlink();
   //setupServos();
-  //setupIndicator();
+  setupIndicator();
 
   #ifdef ROSE_DEBUG
   Serial.println("done setup");  
@@ -38,5 +38,5 @@ void loop() {
   handleButton();
   handleBlink();
   //handleServos();
-  //handleIndicator();
+  handleIndicator();
 }

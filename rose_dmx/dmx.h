@@ -127,6 +127,9 @@ void setupDMX()
 
   #ifdef ROSE_DEBUG
   Serial.print("dmx address: "); Serial.println(dmx_base_address);
+  Serial.print("digits: "); Serial.print(dmx_base_address_digit_3);
+  Serial.print(" "); Serial.print(dmx_base_address_digit_2);
+  Serial.print(" "); Serial.println(dmx_base_address_digit_1);
   #endif
   
 	Wire.begin(); // join i2c bus (address optional for master)
