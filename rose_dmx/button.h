@@ -51,35 +51,68 @@ void handleButton()
       #endif
       
 			dmx_servo_value += 32;
-			if( dmx_servo_value > 128 )
-				dmx_servo_value = 0;
-			
+
 			elapsedButton_petal_ms = 0;
 			sendDMXI2C();
+
+      if( dmx_servo_value >= 128 )
+        dmx_servo_value = 0;     
 		}
 		
 		// if led button is pushed
 		if( elapsedButton_led_ms > 1000 )
-		{
+		{          
+			button_led_state++;
+      if( button_led_state > 3 )
+        button_led_state = 0;
+
       #ifdef ROSE_DEBUG
-      Serial.println("led button push");
+      Serial.print("led button push. button_led_state: "); Serial.println(button_led_state);
       #endif
-          
-			button_led_state != button_led_state;
-			
+      
 			if( button_led_state == 1 )
 			{
-				dmx_control1_value = 30;
-				dmx_led1_r_value = 255;
-				dmx_control2_value = 30;
-				dmx_led2_r_value = 255;
+				dmx_control1_value  = 30;
+				dmx_led1_r_value    = 255;
+        dmx_led1_g_value    = 255;
+        dmx_led1_b_value    = 255;
+				dmx_control2_value  = 30;
+				dmx_led2_r_value    = 255;
+        dmx_led2_g_value    = 255;
+        dmx_led2_b_value    = 255;       
 			}
+      else if( button_led_state == 2 )
+      {
+        dmx_control1_value  = 40;
+        dmx_led1_r_value    = 255;
+        dmx_led1_g_value    = 255;
+        dmx_led1_b_value    = 255;
+        dmx_control2_value  = 40;
+        dmx_led2_r_value    = 255;
+        dmx_led2_g_value    = 255;
+        dmx_led2_b_value    = 255;       
+      }  
+      else if( button_led_state == 3 )
+      {
+        dmx_control1_value  = 52;
+        dmx_led1_r_value    = 255;
+        dmx_led1_g_value    = 0;
+        dmx_led1_b_value    = 0;
+        dmx_control2_value  = 62;
+        dmx_led2_r_value    = 255;
+        dmx_led2_g_value    = 0;
+        dmx_led2_b_value    = 0;       
+      }   
 			else
 			{
-				dmx_control1_value = 0;
-				dmx_led1_r_value = 0;
-				dmx_control2_value = 0;
-				dmx_led2_r_value = 0;
+				dmx_control1_value  = 0;
+				dmx_led1_r_value    = 0;
+        dmx_led1_g_value    = 0;
+        dmx_led1_b_value    = 0;        
+				dmx_control2_value  = 0;
+				dmx_led2_r_value    = 0;
+        dmx_led2_g_value    = 0;
+        dmx_led2_b_value    = 0;        
 			}
 			
 			elapsedButton_led_ms = 0;

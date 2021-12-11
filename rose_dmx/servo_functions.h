@@ -16,6 +16,9 @@
 #define SERVO_PETAL_DROP_ANGLE 50
 
 #define NUM_SERVOS 4
+const uint8_t SERVO_PETAL_HOLD_ANGLES[NUM_SERVOS] = { SERVO_PETAL_DROP_ANGLE, SERVO_PETAL_DROP_ANGLE, SERVO_PETAL_HOLD_ANGLE, SERVO_PETAL_HOLD_ANGLE };
+const uint8_t SERVO_PETAL_DROP_ANGLES[NUM_SERVOS] = { SERVO_PETAL_HOLD_ANGLE, SERVO_PETAL_HOLD_ANGLE, SERVO_PETAL_DROP_ANGLE, SERVO_PETAL_DROP_ANGLE };
+
 // Mapping of petal number to servo number
 #define SERVO_PETAL_1 0
 #define SERVO_PETAL_2 1
@@ -64,7 +67,7 @@ void servoHoldPetal( const uint8_t servoNumber, const uint32_t & state_counter )
 {
 	if( state_counter == 0 )
 	{
-		setServo(servoNumber, SERVO_PETAL_HOLD_ANGLE );
+		setServo(servoNumber, SERVO_PETAL_HOLD_ANGLES[servoNumber] );
 		petalDropState = PETAL_HOLD_STATE;
 	}
 }
@@ -80,7 +83,7 @@ void setupServos()
 	for( uint8_t servoIdx=0; servoIdx < NUM_SERVOS; servoIdx++ )
 		servoHoldPetal( servoIdx, 0 );
 	
-	servoState 			= 0;
+	servoState 			  = 0;
 	servoState_prev 	= 0;
 	servoStateChange 	= false;
 }
@@ -91,14 +94,22 @@ void servoDropPetal( const uint8_t servoNumber, const uint32_t & state_counter )
 	// and to minimize stress on mechanism
     if( state_counter == 0 )
     {
-    	setServo(servoNumber, SERVO_PETAL_DROP_ANGLE );
-        servoElapsed2_ms  	= 0;
-		petalDropState 		= PETAL_DROP_STATE;
+      #ifdef ROSE_DEBUG
+      Serial.println("sservoDropPetal. PETAL_DROP_STATE: ");
+      #endif 
+    
+    	setServo(servoNumber, SERVO_PETAL_DROP_ANGLES[servoNumber] );
+      servoElapsed2_ms  	= 0;
+		  petalDropState 		  = PETAL_DROP_STATE;
     }
     else if( servoElapsed2_ms > 1000 && petalDropState == PETAL_DROP_STATE)
     {
-        setServo(servoNumber, SERVO_PETAL_HOLD_ANGLE );
-		petalDropState 		= PETAL_HOLD_STATE;
+      #ifdef ROSE_DEBUG
+      Serial.println("sservoDropPetal. PETAL_HOLD_STATE: ");
+      #endif 
+            
+      setServo(servoNumber, SERVO_PETAL_HOLD_ANGLES[servoNumber] );
+		  petalDropState 		  = PETAL_HOLD_STATE;
     }
 }
 
@@ -107,6 +118,10 @@ void handleServos()
 	// register state change
 	if( servoState != servoState_prev )
 	{
+    #ifdef ROSE_DEBUG
+    Serial.print("servo state change. state: "); Serial.println(servoState);
+    #endif 
+    
 		servoElapsed1_ms = 0;
 		servoStateChange = true;
 		servoCounter     = 0;
