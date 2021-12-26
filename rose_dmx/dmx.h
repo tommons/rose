@@ -1,3 +1,26 @@
+// 
+// The MIT License (MIT)
+// 
+// Copyright (c) 2022 Thomas M. Hall
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #ifndef DMX_H
 #define DMX_H
 
@@ -56,58 +79,59 @@ uint8_t dmx_control2_channel_num    = 0;
 uint8_t dmx_led2_r_channel_num    	= 0;
 uint8_t dmx_led2_g_channel_num    	= 0;
 uint8_t dmx_led2_b_channel_num    	= 0;
-uint8_t dmx_servo_channel_num    	  = 0;
+uint8_t dmx_servo_channel_num    	= 0;
 
-bool allow_dmxI2C = false;
+bool allow_dmxI2C 					= false;
+bool suspend_dmxI2C 				= false;
 
 void sendDMXI2C()
 {
-  #ifdef ROSE_DEBUG
-  Serial.println(F("call sendDMXI2C"));
-  #endif
-    
-  if( allow_dmxI2C )
-  {
-    // Print for debug
-    #ifdef ROSE_DEBUG
-    Serial.println(F("DMX Update:"));
-    Serial.print(F("DMX Control1: "));    Serial.println(dmx_control1_value);
-    Serial.print(F("DMX LED1 R: "));    Serial.println(dmx_led1_r_value);
-    Serial.print(F("DMX LED1 G: "));    Serial.println(dmx_led1_g_value);
-    Serial.print(F("DMX LED1 B: "));    Serial.println(dmx_led1_b_value);
-    Serial.print(F("DMX Control2: "));    Serial.println(dmx_control2_value);     
-    Serial.print(F("DMX LED2 R: "));    Serial.println(dmx_led2_r_value);
-    Serial.print(F("DMX LED2 G: "));    Serial.println(dmx_led2_g_value);
-    Serial.print(F("DMX LED2 B: "));    Serial.println(dmx_led2_b_value);
-    Serial.print(F("DMX Servo: "));     Serial.println(dmx_servo_value);
-    #endif
-        
-  	// Send the DMX values to the slave arduino
-  	Wire.beginTransmission(DMX_I2C_ID); // begin transmitting
-  	Wire.write(DMX_MSGID);
-  	Wire.write(dmx_control1_value);
-  	Wire.write(dmx_led1_r_value);
-  	Wire.write(dmx_led1_g_value);
-  	Wire.write(dmx_led1_b_value);
-  	Wire.write(dmx_control2_value);		
-  	Wire.write(dmx_led2_r_value);
-  	Wire.write(dmx_led2_g_value);
-  	Wire.write(dmx_led2_b_value);
-  	Wire.write(dmx_servo_value); 
-  	Wire.endTransmission();    // stop transmitting
+#ifdef ROSE_DEBUG
+	Serial.println(F("call sendDMXI2C"));
+#endif
+	
+	if( allow_dmxI2C && !suspend_dmxI2C )
+	{
+		// Print for debug
+		#ifdef ROSE_DEBUG
+		Serial.println(F("DMX Update:"));
+		Serial.print(F("DMX Control1: "));    Serial.println(dmx_control1_value);
+		Serial.print(F("DMX LED1 R: "));    Serial.println(dmx_led1_r_value);
+		Serial.print(F("DMX LED1 G: "));    Serial.println(dmx_led1_g_value);
+		Serial.print(F("DMX LED1 B: "));    Serial.println(dmx_led1_b_value);
+		Serial.print(F("DMX Control2: "));    Serial.println(dmx_control2_value);     
+		Serial.print(F("DMX LED2 R: "));    Serial.println(dmx_led2_r_value);
+		Serial.print(F("DMX LED2 G: "));    Serial.println(dmx_led2_g_value);
+		Serial.print(F("DMX LED2 B: "));    Serial.println(dmx_led2_b_value);
+		Serial.print(F("DMX Servo: "));     Serial.println(dmx_servo_value);
+		#endif
+		
+		// Send the DMX values to the slave arduino
+		Wire.beginTransmission(DMX_I2C_ID); // begin transmitting
+		Wire.write(DMX_MSGID);
+		Wire.write(dmx_control1_value);
+		Wire.write(dmx_led1_r_value);
+		Wire.write(dmx_led1_g_value);
+		Wire.write(dmx_led1_b_value);
+		Wire.write(dmx_control2_value);		
+		Wire.write(dmx_led2_r_value);
+		Wire.write(dmx_led2_g_value);
+		Wire.write(dmx_led2_b_value);
+		Wire.write(dmx_servo_value); 
+		Wire.endTransmission();    // stop transmitting
 
-    // servo state happens in this arduino
-    // set servo state
-    servoState = dmx_servo_value;      
-  }
+		// servo state happens in this arduino
+		// set servo state
+		servoState = dmx_servo_value;      
+	}
 }
-			
+
 void setupDMX()
 {
-  #ifdef ROSE_DEBUG
-  Serial.println("start setupDMX");
-  #endif
-  
+#ifdef ROSE_DEBUG
+	Serial.println("start setupDMX");
+#endif
+
 	pinMode(DMX_DIP_0_PIN, INPUT_PULLUP);
 	pinMode(DMX_DIP_1_PIN, INPUT_PULLUP);
 	pinMode(DMX_DIP_2_PIN, INPUT_PULLUP);
@@ -147,13 +171,13 @@ void setupDMX()
 	value_tmp          			= value_tmp - dmx_base_address_digit_2*10;
 	dmx_base_address_digit_1 	= value_tmp;
 
-  #ifdef ROSE_DEBUG
-  Serial.print("dmx address: "); Serial.println(dmx_base_address);
-  Serial.print("digits: "); Serial.print(dmx_base_address_digit_3);
-  Serial.print(" "); Serial.print(dmx_base_address_digit_2);
-  Serial.print(" "); Serial.println(dmx_base_address_digit_1);
-  #endif
-  
+#ifdef ROSE_DEBUG
+	Serial.print("dmx address: "); Serial.println(dmx_base_address);
+	Serial.print("digits: "); Serial.print(dmx_base_address_digit_3);
+	Serial.print(" "); Serial.print(dmx_base_address_digit_2);
+	Serial.print(" "); Serial.println(dmx_base_address_digit_1);
+#endif
+
 	Wire.begin(); // join i2c bus (address optional for master)
 	
 	// initialize the dmx receiver
@@ -161,11 +185,11 @@ void setupDMX()
 	
 	dmx_elapsed_ms = 0;
 
-  allow_dmxI2C = true;
+	allow_dmxI2C = true;
 
-  #ifdef ROSE_DEBUG
-  Serial.println("done setupDMX");
-  #endif 
+#ifdef ROSE_DEBUG
+	Serial.println("done setupDMX");
+#endif 
 }
 
 void handleDMX()
@@ -177,7 +201,7 @@ void handleDMX()
 		if( DMXSerial.dataUpdated() ) 
 		{
 			DMXSerial.resetUpdated();
-		
+			
 			dmx_elapsed_ms = 0;
 			
 			// Read our values of interest from the DMX bus
@@ -191,13 +215,13 @@ void handleDMX()
 			dmx_led2_b_value 		= DMXSerial.read(dmx_led2_b_channel_num);
 			dmx_servo_value  		= DMXSerial.read(dmx_servo_channel_num);
 
-      #ifdef ROSE_DEBUG
-      Serial.println(F("Got DMX Update:"));
-      #endif
-    
-      // send the dmx data over i2c
-      sendDMXI2C();
-      
+			#ifdef ROSE_DEBUG
+			Serial.println(F("Got DMX Update:"));
+			#endif
+			
+			// send the dmx data over i2c
+			sendDMXI2C();
+			
 		}
 	}
 }

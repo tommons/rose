@@ -1,3 +1,26 @@
+// 
+// The MIT License (MIT)
+// 
+// Copyright (c) 2022 Thomas M. Hall
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #ifndef LED_FUNCTIONS_H
 #define LED_FUNCTIONS_H
 
@@ -9,15 +32,17 @@
 // LEDs
 #define PIN_LED_OUTER_RING   6
 #define PIN_LED_INNER_RING   7
-#define LED_COUNT_OUTER_RING 24
+#define LED_COUNT_OUTER_RING 24 // keep this as 24 to allow for sync between inner and outer rings.  It really only has 23 LEDs
 #define LED_COUNT_INNER_RING 24
 #define LED_MAX_BRIGHTNESS 128
 #define LED_STATE_DELAY_MS 50
 
 Adafruit_NeoPixel led_outer_ring_neo(LED_COUNT_OUTER_RING, PIN_LED_OUTER_RING, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel led_inner_ring_neo(LED_COUNT_INNER_RING, PIN_LED_INNER_RING, NEO_GRB + NEO_KHZ800);
+
 Led led_outer_ring;
 Led led_inner_ring;
+
 long rainbow_firstPixelHue = 0;
 
 #define WIPE_CHASE_LENGTH 8
@@ -58,6 +83,7 @@ void setupLeds()
 	}	
 }
 
+// Set all LEDs to off
 void clearLeds( Led & led )
 {
 	if( led.new_state == true )
@@ -67,6 +93,7 @@ void clearLeds( Led & led )
 	}
 }
 
+// Set all LEDs to the same color
 void colorFill( Led & led, const uint32_t & color )
 {
 	if( led.ledElapsed_ms > 50 )
@@ -83,6 +110,7 @@ void colorFill( Led & led, const uint32_t & color )
 	}
 }
 
+// Turn on each LED after a set time
 void colorWipe( Led & led, const uint32_t & color, uint8_t wait_ms )
 {
 	if( led.new_state == true )
@@ -103,6 +131,8 @@ void colorWipe( Led & led, const uint32_t & color, uint8_t wait_ms )
 	}
 }
 
+// Alternate which LEDs are on/off in sequence
+// Adapted from Adafruit NeoPixel examples
 void theaterChase(Led & led, const uint32_t color, const uint16_t wait_ms) 
 {
 
@@ -125,6 +155,8 @@ void theaterChase(Led & led, const uint32_t color, const uint16_t wait_ms)
 	}
 }
 
+// Rotate through color wheel across all LEDs
+// Adapted from Adafruit NeoPixel examples
 void rainbow( Led & led, const uint32_t color, const uint16_t wait_ms ) 
 {
 	// Hue of first pixel runs 5 complete loops through the color wheel.
@@ -149,11 +181,6 @@ void rainbow( Led & led, const uint32_t color, const uint16_t wait_ms )
 			// (strip.numPixels() steps):
 			int pixelHue = rainbow_firstPixelHue + (i * HuePerPixel);
 			
-			// strip.ColorHSV() can take 1 or 3 arguments: a hue (0 to 65535) or
-			// optionally add saturation and value (brightness) (each 0 to 255).
-			// Here we're using just the single-argument hue variant. The result
-			// is passed through strip.gamma32() to provide 'truer' colors
-			// before assigning to each pixel:
 			led.led->setPixelColor(i, Adafruit_NeoPixel::gamma32( Adafruit_NeoPixel::ColorHSV(pixelHue, sat, val) ) );
 		}
 		
@@ -165,7 +192,8 @@ void rainbow( Led & led, const uint32_t color, const uint16_t wait_ms )
 	}
 }
 
-// Rainbow-enhanced theater marquee. Pass delay time (in ms) between frames.
+// Combine theater chase and rainbow functions
+// Adapted from Adafruit NeoPixel examples
 void theaterChaseRainbow( Led & led, const uint32_t color, const uint16_t wait_ms ) 
 {
 	if( led.ledElapsed_ms >= wait_ms )
@@ -202,6 +230,8 @@ void theaterChaseRainbow( Led & led, const uint32_t color, const uint16_t wait_m
 	}
 }
 
+// Wipe a color around the strips with a fading trail behind the active LED
+// Forward Direction
 void wipeChaseForward( Led & led, const uint32_t & color, uint8_t wait_ms )
 {
 	if( led.ledElapsed_ms >= wait_ms )
@@ -239,6 +269,8 @@ void wipeChaseForward( Led & led, const uint32_t & color, uint8_t wait_ms )
 	}
 }
 
+// Wipe a color around the strips with a fading trail behind the active LED
+// Backward Direction
 void wipeChaseBackward( Led & led, const uint32_t & color, uint8_t wait_ms )
 {
 	if( led.ledElapsed_ms >= wait_ms )
@@ -280,6 +312,7 @@ void wipeChaseBackward( Led & led, const uint32_t & color, uint8_t wait_ms )
 	}
 }
 
+// state machine for LED control
 void handleLed(Led & led)
 {
 	// avoid race-conditions with the dmx handler and get a copy of the state
@@ -294,12 +327,17 @@ void handleLed(Led & led)
 	
 	switch( led.state )
 	{
+		/**** Fill ****/
 		case 0: // Fill All
 			colorFill( led, led.color_new );
 			break;
+		
+		/**** No-OP ****/
 		case 1: // No-op - use to pre-select colors without affecting control
 			
-			break;			
+			break;		
+			
+		/**** Color Wipes ****/
 		case 10: // Color Wipe
 			colorWipe( led, led.color_new, 500 );			
 			break;
@@ -312,39 +350,63 @@ void handleLed(Led & led)
 		case 13: // Color Wipe
 			colorWipe( led, led.color_new, 50 );			
 			break;	
+		
+		/**** Theater Chases ****/
 		case 20: 
 			theaterChase( led, led.color_new, 50 );
 			break;
+			
+		/**** Rainbows ****/	
 		case 30: 
 			rainbow( led, led.color_new, 10 );
 			break;
+			
+		/**** Rainbow Theater Chases ****/
 		case 40:
 			theaterChaseRainbow(led, led.color_new, 50);
 			break;
+			
+		/**** Wipe Chase Forward ****/
 		case 50:
-			wipeChaseForward( led, led.color_new, 2000 / 24 );
+			wipeChaseForward( led, led.color_new, 2000 / LED_COUNT_INNER_RING );
 			break;			
 		case 51:
-			wipeChaseForward( led, led.color_new, 1000 / 24 );
+			wipeChaseForward( led, led.color_new, 1500 / LED_COUNT_INNER_RING );
 			break;
 		case 52:
-			wipeChaseForward( led, led.color_new, 500 / 24 );
+			wipeChaseForward( led, led.color_new, 1000 / LED_COUNT_INNER_RING );
 			break;	
 		case 53:
-			wipeChaseForward( led, led.color_new, 200 / 24 );
+			wipeChaseForward( led, led.color_new, 750 / LED_COUNT_INNER_RING );
 			break;
+		case 54:
+			wipeChaseForward( led, led.color_new, 500 / LED_COUNT_INNER_RING );
+			break;
+		case 55:
+			wipeChaseForward( led, led.color_new, 200 / LED_COUNT_INNER_RING );
+			break;
+			
+		/**** Wipe Chase Backward ****/
 		case 60:
-			wipeChaseBackward( led, led.color_new, 2000 / 24 );
+			wipeChaseBackward( led, led.color_new, 2000 / LED_COUNT_INNER_RING );
 			break;
 		case 61:
-			wipeChaseBackward( led, led.color_new, 1000 / 24 );
+			wipeChaseBackward( led, led.color_new, 1500 / LED_COUNT_INNER_RING );
 			break;
 		case 62:
-			wipeChaseBackward( led, led.color_new, 500 / 24 );
+			wipeChaseBackward( led, led.color_new, 1000 / LED_COUNT_INNER_RING );
 			break;	
 		case 63:
-			wipeChaseBackward( led, led.color_new, 200 / 24 );
+			wipeChaseBackward( led, led.color_new, 750 / LED_COUNT_INNER_RING );
 			break;	
+		case 64:
+			wipeChaseBackward( led, led.color_new, 500 / LED_COUNT_INNER_RING );
+			break;	
+		case 65:
+			wipeChaseBackward( led, led.color_new, 200 / LED_COUNT_INNER_RING );
+			break;				
+		
+		/**** Default ****/
 		default:
 			clearLeds(led);
 			break;
@@ -358,4 +420,5 @@ void handleLeds()
 	handleLed(led_inner_ring);
 	handleLed(led_outer_ring);
 }	
+
 #endif
