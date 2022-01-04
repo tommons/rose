@@ -35,7 +35,7 @@
 #define SERVO_FREQ_HZ     		50 // Analog servos run at ~50/20 Hz updates
 #define SERVO_OSC_FREQ_HZ 		27000000
 
-#define SERVO_PETAL_DROP_ANGLE_DELTA 	70  // how far the servo travels to pull the magnet
+#define SERVO_PETAL_DROP_ANGLE_DELTA 	50  // how far the servo travels to pull the magnet
 #define SERVO_PETAL_HOLD_ANGLE_CCW  	120
 #define SERVO_PETAL_HOLD_ANGLE_CW  		50
 

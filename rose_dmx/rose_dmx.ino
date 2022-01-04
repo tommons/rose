@@ -21,8 +21,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <Wire.h>
-
 #define ROSE_DEBUG 
 #undef ROSE_DEBUG // comment this out to enable debug
 

@@ -30,13 +30,13 @@
 
 #include "servo_functions.h"
 
-#define DMX_DIP_0_PIN 12
-#define DMX_DIP_1_PIN 11
-#define DMX_DIP_2_PIN 10
-#define DMX_DIP_3_PIN 9
-#define DMX_DIP_4_PIN 8
-#define DMX_DIP_5_PIN 7
-#define DMX_DIP_6_PIN 6
+#define DMX_DIP_1_PIN 6
+#define DMX_DIP_2_PIN 7
+#define DMX_DIP_3_PIN 8
+#define DMX_DIP_4_PIN 9
+#define DMX_DIP_5_PIN 10
+#define DMX_DIP_6_PIN 11
+#define DMX_DIP_7_PIN 12
 
 // DMX Interface info
 // Channels are 1-based
@@ -66,20 +66,20 @@ uint8_t dmx_led2_g_value 	= 0;
 uint8_t dmx_led2_b_value 	= 0;
 uint8_t dmx_servo_value  	= 0;
 
-uint8_t dmx_base_address       		  = 0;
+uint16_t dmx_base_address       	  = 0;
 uint8_t dmx_base_address_digit_1 	  = 0;			
 uint8_t dmx_base_address_digit_2 	  = 0;
 uint8_t dmx_base_address_digit_3 	  = 0;
 
-uint8_t dmx_control1_channel_num    = 0;
-uint8_t dmx_led1_r_channel_num    	= 0;
-uint8_t dmx_led1_g_channel_num    	= 0;
-uint8_t dmx_led1_b_channel_num    	= 0;
-uint8_t dmx_control2_channel_num    = 0;
-uint8_t dmx_led2_r_channel_num    	= 0;
-uint8_t dmx_led2_g_channel_num    	= 0;
-uint8_t dmx_led2_b_channel_num    	= 0;
-uint8_t dmx_servo_channel_num    	= 0;
+uint16_t dmx_control1_channel_num    = 0;
+uint16_t dmx_led1_r_channel_num    	= 0;
+uint16_t dmx_led1_g_channel_num    	= 0;
+uint16_t dmx_led1_b_channel_num    	= 0;
+uint16_t dmx_control2_channel_num    = 0;
+uint16_t dmx_led2_r_channel_num    	= 0;
+uint16_t dmx_led2_g_channel_num    	= 0;
+uint16_t dmx_led2_b_channel_num    	= 0;
+uint16_t dmx_servo_channel_num    	= 0;
 
 bool allow_dmxI2C 					= false;
 bool suspend_dmxI2C 				= false;
@@ -132,24 +132,25 @@ void setupDMX()
 	Serial.println("start setupDMX");
 #endif
 
-	pinMode(DMX_DIP_0_PIN, INPUT_PULLUP);
 	pinMode(DMX_DIP_1_PIN, INPUT_PULLUP);
 	pinMode(DMX_DIP_2_PIN, INPUT_PULLUP);
 	pinMode(DMX_DIP_3_PIN, INPUT_PULLUP);
 	pinMode(DMX_DIP_4_PIN, INPUT_PULLUP);
 	pinMode(DMX_DIP_5_PIN, INPUT_PULLUP);
 	pinMode(DMX_DIP_6_PIN, INPUT_PULLUP);
+	pinMode(DMX_DIP_7_PIN, INPUT_PULLUP);
 	
-	const uint8_t dip_0 = !digitalRead(DMX_DIP_0_PIN);
 	const uint8_t dip_1 = !digitalRead(DMX_DIP_1_PIN);
 	const uint8_t dip_2 = !digitalRead(DMX_DIP_2_PIN);
 	const uint8_t dip_3 = !digitalRead(DMX_DIP_3_PIN);
 	const uint8_t dip_4 = !digitalRead(DMX_DIP_4_PIN);
 	const uint8_t dip_5 = !digitalRead(DMX_DIP_5_PIN);
 	const uint8_t dip_6 = !digitalRead(DMX_DIP_6_PIN);
+  const uint8_t dip_7 = !digitalRead(DMX_DIP_7_PIN);
 
 	// build decimal value from dip switch bits
-	const uint8_t value = dip_0 + (dip_1 << 1) + (dip_2 << 2) + (dip_3 << 3) + (dip_4 << 4);
+  // MSB is DIP1, LSB is DIP5
+	const uint16_t value = (dip_1 << 4) + (dip_2 << 3) + (dip_3 << 2) + (dip_4 << 1) + (dip_5 << 0);
 	dmx_base_address = (value * 16) + 1;
 
 	// compute dmx channel addresses from base
@@ -164,7 +165,7 @@ void setupDMX()
 	dmx_servo_channel_num    	  = dmx_base_address + DMX_SERVO_CHANNEL_OFFSET;
 
 	// compute the value of each digit
-	uint8_t value_tmp  			= dmx_base_address;
+	uint16_t value_tmp  			= dmx_base_address;
 	dmx_base_address_digit_3 	= value_tmp / 100;
 	value_tmp          			= value_tmp - dmx_base_address_digit_3*100;
 	dmx_base_address_digit_2 	= value_tmp / 10;
@@ -172,7 +173,12 @@ void setupDMX()
 	dmx_base_address_digit_1 	= value_tmp;
 
 #ifdef ROSE_DEBUG
-	Serial.print("dmx address: "); Serial.println(dmx_base_address);
+	Serial.print("dmx dip1: "); Serial.println(dip_1);
+  Serial.print("dmx dip2: "); Serial.println(dip_2);
+  Serial.print("dmx dip3: "); Serial.println(dip_3);
+  Serial.print("dmx dip4: "); Serial.println(dip_4);
+  Serial.print("dmx dip5: "); Serial.println(dip_5);
+  Serial.print("value: "); Serial.println(value);
 	Serial.print("digits: "); Serial.print(dmx_base_address_digit_3);
 	Serial.print(" "); Serial.print(dmx_base_address_digit_2);
 	Serial.print(" "); Serial.println(dmx_base_address_digit_1);
