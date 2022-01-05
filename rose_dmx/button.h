@@ -27,9 +27,12 @@
 #include <elapsedMillis.h>
 
 #include "dmx.h"
+#include "indicator.h"
 
 elapsedMillis elapsedButton_petal_ms;
 elapsedMillis elapsedButton_led_ms;
+elapsedMillis elapsedButton_petal2_ms;
+elapsedMillis elapsedButton_led2_ms;
 elapsedMillis elpasedButtonCheck_ms;
 elapsedMillis elpasedButtonLowTimer_ms;
 
@@ -76,13 +79,15 @@ void handleButton()
 		// if petal button isn't pushed
 		if( buttonState_petal == LOW )
 		{
-			elapsedButton_petal_ms = 0;
+			elapsedButton_petal_ms 		= 0;
+			elapsedButton_petal2_ms 	= 0;
 		}
 		
 		// if led button isn't pushed
 		if( buttonState_led == LOW )
 		{
-			elapsedButton_led_ms = 0;
+			elapsedButton_led_ms 		= 0;
+			elapsedButton_led2_ms 		= 0;
 		}
 		
 		// look for button transitions
@@ -96,7 +101,7 @@ void handleButton()
 		}		
 		
 		// if petal button is pushed for long enough
-		if( elapsedButton_petal_ms > 1000 )
+		if( elapsedButton_petal_ms > 1000 && buttonState_led == LOW )
 		{
 			#ifdef ROSE_DEBUG
 			Serial.println("petal button push");
@@ -113,7 +118,7 @@ void handleButton()
 		}
 		
 		// if led button is pushed for long enough
-		if( elapsedButton_led_ms > 1000 )
+		if( elapsedButton_led_ms > 1000 && buttonState_petal == LOW )
 		{          
 			button_led_state++;
 			if( button_led_state > 3 )
@@ -173,6 +178,19 @@ void handleButton()
 			sendDMXI2C();
 		}	
 
+		// backdoor long button pushes to override dmx address
+		if( elapsedButton_led2_ms > 5000 && elapsedButton_petal2_ms > 5000 )
+		{
+			dmx_base_address 			= 1;
+			setDMXAddresses();
+			elapsedButton_led2_ms 		= 0;
+			elapsedButton_petal2_ms 	= 0;
+			// reset normal button counters to avoid accidental trigger on release
+			elapsedButton_led_ms 		= 0;			
+			elapsedButton_petal_ms 		= 0;
+			indicator_state   			= INDICATOR_STATE::INIT;
+		}
+		
 		// save the old state of the buttons
 		buttonState_petal_prev 				= buttonState_petal;
 		buttonState_led_prev 				= buttonState_led;

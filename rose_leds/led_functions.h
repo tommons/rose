@@ -34,7 +34,7 @@
 #define PIN_LED_INNER_RING   7
 #define LED_COUNT_OUTER_RING 24 // keep this as 24 to allow for sync between inner and outer rings.  It really only has 23 LEDs
 #define LED_COUNT_INNER_RING 24
-#define LED_MAX_BRIGHTNESS 128
+#define LED_MAX_BRIGHTNESS 192
 #define LED_STATE_DELAY_MS 50
 
 Adafruit_NeoPixel led_outer_ring_neo(LED_COUNT_OUTER_RING, PIN_LED_OUTER_RING, NEO_GRB + NEO_KHZ800);

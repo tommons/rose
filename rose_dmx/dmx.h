@@ -131,6 +131,28 @@ void sendDMXI2C()
 	}
 }
 
+void setDMXAddresses()
+{
+	// compute dmx channel addresses from base
+	dmx_control1_channel_num    = dmx_base_address + DMX_CONTROL1_CHANNEL_OFFSET;
+	dmx_led1_r_channel_num    	= dmx_base_address + DMX_LED1_R_CHANNEL_OFFSET;
+	dmx_led1_g_channel_num    	= dmx_base_address + DMX_LED1_G_CHANNEL_OFFSET;
+	dmx_led1_b_channel_num    	= dmx_base_address + DMX_LED1_B_CHANNEL_OFFSET;
+	dmx_control2_channel_num    = dmx_base_address + DMX_CONTROL2_CHANNEL_OFFSET;
+	dmx_led2_r_channel_num    	= dmx_base_address + DMX_LED2_R_CHANNEL_OFFSET;
+	dmx_led2_g_channel_num    	= dmx_base_address + DMX_LED2_G_CHANNEL_OFFSET;
+	dmx_led2_b_channel_num    	= dmx_base_address + DMX_LED2_B_CHANNEL_OFFSET;
+	dmx_servo_channel_num    	= dmx_base_address + DMX_SERVO_CHANNEL_OFFSET;
+	
+	// compute the value of each digit
+	uint16_t value_tmp  	    = dmx_base_address;
+	dmx_base_address_digit_3 	= value_tmp / 100;
+	value_tmp          			= value_tmp - dmx_base_address_digit_3*100;
+	dmx_base_address_digit_2 	= value_tmp / 10;
+	value_tmp          			= value_tmp - dmx_base_address_digit_2*10;
+	dmx_base_address_digit_1 	= value_tmp;	
+}
+	
 void setupDMX()
 {
 #ifdef ROSE_DEBUG
@@ -151,43 +173,26 @@ void setupDMX()
 	const uint8_t dip_4 = !digitalRead(DMX_DIP_4_PIN);
 	const uint8_t dip_5 = !digitalRead(DMX_DIP_5_PIN);
 	const uint8_t dip_6 = !digitalRead(DMX_DIP_6_PIN);
-  const uint8_t dip_7 = !digitalRead(DMX_DIP_7_PIN);
+	const uint8_t dip_7 = !digitalRead(DMX_DIP_7_PIN);
 
 	// build decimal value from dip switch bits
-  // MSB is DIP1, LSB is DIP5
+	// MSB is DIP1, LSB is DIP5
 	const uint16_t value = (dip_1 << 4) + (dip_2 << 3) + (dip_3 << 2) + (dip_4 << 1) + (dip_5 << 0);
 	dmx_base_address = (value * 16) + 1;
 
-	// compute dmx channel addresses from base
-	dmx_control1_channel_num    = dmx_base_address + DMX_CONTROL1_CHANNEL_OFFSET;
-	dmx_led1_r_channel_num    	= dmx_base_address + DMX_LED1_R_CHANNEL_OFFSET;
-	dmx_led1_g_channel_num    	= dmx_base_address + DMX_LED1_G_CHANNEL_OFFSET;
-	dmx_led1_b_channel_num    	= dmx_base_address + DMX_LED1_B_CHANNEL_OFFSET;
-	dmx_control2_channel_num    = dmx_base_address + DMX_CONTROL2_CHANNEL_OFFSET;
-	dmx_led2_r_channel_num    	= dmx_base_address + DMX_LED2_R_CHANNEL_OFFSET;
-	dmx_led2_g_channel_num    	= dmx_base_address + DMX_LED2_G_CHANNEL_OFFSET;
-	dmx_led2_b_channel_num    	= dmx_base_address + DMX_LED2_B_CHANNEL_OFFSET;
-	dmx_servo_channel_num    	  = dmx_base_address + DMX_SERVO_CHANNEL_OFFSET;
+	setDMXAddresses();
 
-	// compute the value of each digit
-	uint16_t value_tmp  			= dmx_base_address;
-	dmx_base_address_digit_3 	= value_tmp / 100;
-	value_tmp          			= value_tmp - dmx_base_address_digit_3*100;
-	dmx_base_address_digit_2 	= value_tmp / 10;
-	value_tmp          			= value_tmp - dmx_base_address_digit_2*10;
-	dmx_base_address_digit_1 	= value_tmp;
-
-#ifdef ROSE_DEBUG
+	#ifdef ROSE_DEBUG
 	Serial.print("dmx dip1: "); Serial.println(dip_1);
-  Serial.print("dmx dip2: "); Serial.println(dip_2);
-  Serial.print("dmx dip3: "); Serial.println(dip_3);
-  Serial.print("dmx dip4: "); Serial.println(dip_4);
-  Serial.print("dmx dip5: "); Serial.println(dip_5);
-  Serial.print("value: "); Serial.println(value);
+	Serial.print("dmx dip2: "); Serial.println(dip_2);
+	Serial.print("dmx dip3: "); Serial.println(dip_3);
+	Serial.print("dmx dip4: "); Serial.println(dip_4);
+	Serial.print("dmx dip5: "); Serial.println(dip_5);
+	Serial.print("value: "); Serial.println(value);
 	Serial.print("digits: "); Serial.print(dmx_base_address_digit_3);
 	Serial.print(" "); Serial.print(dmx_base_address_digit_2);
 	Serial.print(" "); Serial.println(dmx_base_address_digit_1);
-#endif
+	#endif
 
 	Wire.begin(); // join i2c bus (address optional for master)
 	

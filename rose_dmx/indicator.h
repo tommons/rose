@@ -36,7 +36,7 @@ elapsedMillis totalElapsed_ms;
 
 enum INDICATOR_STATE
 {
-  INIT,
+	INIT,
 	DELAY_1,
 	DIGIT_3,
 	DELAY_2,
@@ -44,8 +44,8 @@ enum INDICATOR_STATE
 	DELAY_3,
 	DIGIT_1,
 	DELAY_4,
-  ERROR_SERIAL,
-  DMX_ACTIVITY,
+	ERROR_SERIAL,
+	DMX_ACTIVITY,
 	IDLE
 };
 
@@ -62,20 +62,20 @@ void setupIndicator()
 {
 	pinMode(PIN_INDICATOR, OUTPUT);
 	digitalWrite(PIN_INDICATOR,LOW);
- 
+
 	elapsedIndicator_ms 	= 0;
-  elapsedIndicator1_ms  = 0;
+	elapsedIndicator1_ms  = 0;
 	digit_counter 			  = 0;
-  indicator_state       = INDICATOR_STATE::INIT;
-  totalElapsed_ms       = 0;
+	indicator_state       = INDICATOR_STATE::INIT;
+	totalElapsed_ms       = 0;
 }
 
 void indicatorDmxActivity()
 {
-  if( indicator_state == INDICATOR_STATE::IDLE )
-  {
-    indicator_state = DMX_ACTIVITY;
-  }
+	if( indicator_state == INDICATOR_STATE::IDLE )
+	{
+		indicator_state = DMX_ACTIVITY;
+	}
 }
 
 void handleIndicator()
