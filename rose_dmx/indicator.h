@@ -26,7 +26,7 @@
 
 #include <elapsedMillis.h>
 
-#include "dmx.h"
+//#include "dmx.h"
 
 elapsedMillis elapsedIndicator_ms;
 elapsedMillis elapsedIndicator1_ms;
@@ -44,13 +44,19 @@ enum INDICATOR_STATE
 	DELAY_3,
 	DIGIT_1,
 	DELAY_4,
+  ERROR_SERIAL,
+  DMX_ACTIVITY,
 	IDLE
 };
 
-uint8_t indicator_state = 0;
-uint8_t indicator_output = 0;
-uint8_t digit_counter = 0;
-uint8_t init_counter = 0;
+uint8_t indicator_state   = 0;
+uint8_t indicator_output  = 0;
+uint8_t digit_counter     = 0;
+uint8_t init_counter      = 0;
+
+uint8_t dmx_base_address_digit_1     = 0;      
+uint8_t dmx_base_address_digit_2    = 0;
+uint8_t dmx_base_address_digit_3    = 0;
 
 void setupIndicator()
 {
@@ -62,6 +68,14 @@ void setupIndicator()
 	digit_counter 			  = 0;
   indicator_state       = INDICATOR_STATE::INIT;
   totalElapsed_ms       = 0;
+}
+
+void indicatorDmxActivity()
+{
+  if( indicator_state == INDICATOR_STATE::IDLE )
+  {
+    indicator_state = DMX_ACTIVITY;
+  }
 }
 
 void handleIndicator()
@@ -238,9 +252,36 @@ void handleIndicator()
         }
         break;          
   		case INDICATOR_STATE::IDLE:
-        indicator_output = 1;
-        digitalWrite(PIN_INDICATOR,indicator_output);
+        if( indicator_output != 1 )
+        {
+          indicator_output = 1;
+          digitalWrite(PIN_INDICATOR,indicator_output);
+        }
   			break;
+      case INDICATOR_STATE::ERROR_SERIAL:
+        if( elapsedIndicator_ms > 200 )
+        {
+          elapsedIndicator_ms = 0;
+          indicator_output    = !indicator_output;
+                    
+          digitalWrite(PIN_INDICATOR,indicator_output);          
+        }
+        break;
+      case INDICATOR_STATE::DMX_ACTIVITY:
+        if( elapsedIndicator_ms > 50 )
+        {
+          elapsedIndicator_ms = 0;
+          if( indicator_output == 1 )
+          {
+            indicator_output = 0;
+            digitalWrite(PIN_INDICATOR,indicator_output);
+          }
+          else
+          {
+            indicator_state = INDICATOR_STATE::IDLE;
+          }
+        }
+        break;
   	}
 
     elapsedIndicator1_ms = 0;

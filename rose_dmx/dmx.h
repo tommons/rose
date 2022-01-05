@@ -24,11 +24,15 @@
 #ifndef DMX_H
 #define DMX_H
 
+#define DMX_DEBUG
+#undef DMX_DEBUG // uncomment to enable DMX debug
+
 #include <DMXSerial.h>
 #include <Wire.h>
 #include <elapsedMillis.h>
 
 #include "servo_functions.h"
+#include "indicator.h"
 
 #define DMX_DIP_1_PIN 6
 #define DMX_DIP_2_PIN 7
@@ -54,6 +58,8 @@
 #define DMX_SERVO_CHANNEL_OFFSET 		  8
 
 elapsedMillis dmx_elapsed_ms;
+elapsedMillis dmx_debug_elapsed_ms;
+
 #define DMX_READ_ELAPSED_MS 50
 
 uint8_t dmx_control1_value 	= 0;
@@ -67,9 +73,6 @@ uint8_t dmx_led2_b_value 	= 0;
 uint8_t dmx_servo_value  	= 0;
 
 uint16_t dmx_base_address       	  = 0;
-uint8_t dmx_base_address_digit_1 	  = 0;			
-uint8_t dmx_base_address_digit_2 	  = 0;
-uint8_t dmx_base_address_digit_3 	  = 0;
 
 uint16_t dmx_control1_channel_num    = 0;
 uint16_t dmx_led1_r_channel_num    	= 0;
@@ -81,6 +84,8 @@ uint16_t dmx_led2_g_channel_num    	= 0;
 uint16_t dmx_led2_b_channel_num    	= 0;
 uint16_t dmx_servo_channel_num    	= 0;
 
+uint32_t dmx_debug_counter = 0;
+
 bool allow_dmxI2C 					= false;
 bool suspend_dmxI2C 				= false;
 
@@ -90,7 +95,7 @@ void sendDMXI2C()
 	Serial.println(F("call sendDMXI2C"));
 #endif
 	
-	if( allow_dmxI2C && !suspend_dmxI2C )
+	if( allow_dmxI2C )
 	{
 		// Print for debug
 		#ifdef ROSE_DEBUG
@@ -203,11 +208,52 @@ void handleDMX()
 	// Only process updates so often
 	if( dmx_elapsed_ms > DMX_READ_ELAPSED_MS )
 	{
+    #if defined(ROSE_DEBUG) && defined(DMX_DEBUG)
+    // dump the DMX bus data periodically
+    if( dmx_debug_elapsed_ms > 1000 )
+    {
+      dmx_debug_counter++;
+      Serial.println(dmx_debug_counter);
+      for( uint16_t i=1; i<=512; i+=16 )
+      {
+        // print channel number
+        if( i < 100 )
+          Serial.print("0");
+        if( i < 10 )
+          Serial.print("0");
+        Serial.print(i); Serial.print(" ");
+
+        // print next 16 addresses
+        for( uint8_t j=0; j < 16; j++ )
+        {
+          uint16_t ch = i+j;
+          uint8_t val = DMXSerial.read(ch);
+          if( val < 100 )
+            Serial.print("0");
+          if( val < 10 )
+            Serial.print("0");
+          Serial.print(val); 
+          Serial.print(" "); 
+
+          // break the words into groups of 8
+          if( j==7 )
+            Serial.print("  ");
+        }
+        Serial.println("");
+      }
+   
+      dmx_debug_elapsed_ms = 0;
+    }
+    #endif 
+    
 		// check for new dmx instruction
 		if( DMXSerial.dataUpdated() ) 
 		{
 			DMXSerial.resetUpdated();
-			
+
+      // indicate bus activity
+      indicatorDmxActivity();
+      
 			dmx_elapsed_ms = 0;
 			
 			// Read our values of interest from the DMX bus
@@ -221,12 +267,16 @@ void handleDMX()
 			dmx_led2_b_value 		= DMXSerial.read(dmx_led2_b_channel_num);
 			dmx_servo_value  		= DMXSerial.read(dmx_servo_channel_num);
 
+
 			#ifdef ROSE_DEBUG
 			Serial.println(F("Got DMX Update:"));
 			#endif
 			
 			// send the dmx data over i2c
-			sendDMXI2C();
+      if( !suspend_dmxI2C )
+			{
+			  sendDMXI2C();
+			}
 			
 		}
 	}

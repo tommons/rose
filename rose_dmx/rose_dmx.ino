@@ -32,11 +32,22 @@
 
 void setup() 
 {
+  // setup indicator first so we have access to the error state
+  setupIndicator();
+    
 	#ifdef ROSE_DEBUG
 	Serial.begin(9600);
-	while(!Serial);
+  // while we wait for a serial connection, set the error state on the indicator
+	while(!Serial)
+  {
+    indicator_state = INDICATOR_STATE::ERROR_SERIAL;
+    handleIndicator();
+  }
 	#endif
 
+  // resume init indicator state
+  indicator_state = INDICATOR_STATE::INIT;
+  
 	#ifdef ROSE_DEBUG
 	Serial.println("start setup");
 	#endif
@@ -45,7 +56,6 @@ void setup()
 	setupButton();
 	setupBlink();
 	setupServos();
-	setupIndicator();
 
 	#ifdef ROSE_DEBUG
 	Serial.println("done setup");  
