@@ -46,8 +46,12 @@ Led led_inner_ring;
 long rainbow_firstPixelHue = 0;
 
 #define WIPE_CHASE_LENGTH 8
+#define WIPE_CHASE_FULL_LENGTH LED_COUNT_OUTER_RING
+
 uint8_t wipeForward_value[WIPE_CHASE_LENGTH];
 uint8_t wipeBackward_value[WIPE_CHASE_LENGTH];
+uint8_t wipeForwardFull_value[WIPE_CHASE_FULL_LENGTH];
+uint8_t wipeBackwardFull_value[WIPE_CHASE_FULL_LENGTH];
 
 void setupLeds()
 {	
@@ -81,6 +85,21 @@ void setupLeds()
 		Serial.println(wipeBackward_value[i]);
 		#endif
 	}	
+	
+	// initialize wipe value arrays
+	for( uint8_t i=0; i < WIPE_CHASE_FULL_LENGTH; i++ )
+	{
+		// dim to bright
+		wipeForwardFull_value[i] = 255L / (WIPE_CHASE_FULL_LENGTH-i);
+		// bright to dim
+		wipeBackwardFull_value[i] = 255L / (i+1);
+
+		#if 0
+		Serial.print(i); Serial.print(" "); 
+		Serial.print(wipeForwardFull_value[i]); Serial.print(" "); 
+		Serial.println(wipeBackwardFull_value[i]);
+		#endif
+	}		
 }
 
 // Set all LEDs to off
@@ -312,6 +331,88 @@ void wipeChaseBackward( Led & led, const uint32_t & color, uint8_t wait_ms )
 	}
 }
 
+// Wipe a color around the strips with a fading trail behind the active LED
+// Forward Direction
+void wipeChaseForwardFull( Led & led, const uint32_t & color, uint8_t wait_ms )
+{
+	if( led.ledElapsed_ms >= wait_ms )
+	{		
+		const uint8_t numPixels = led.led->numPixels();
+		const uint8_t r = color >> 16 & 0xFF;
+		const uint8_t g = color >> 8  & 0xFF;
+		const uint8_t b = color       & 0xFF;
+		
+		if( led.ledCounter >= numPixels )
+			led.ledCounter = 0;
+		
+		led.led->clear();
+		
+		const uint8_t startPixel = led.ledCounter;
+		
+		for( uint8_t i = 0; i < WIPE_CHASE_FULL_LENGTH; i++ )
+		{
+			const uint8_t p 				= (startPixel+i) % numPixels;
+			const uint8_t wipeBrightness 	= wipeBackwardFull_value[i];;
+			
+			const uint8_t r1 				= ( r * wipeBrightness ) >> 8;
+			const uint8_t g1 				= ( g * wipeBrightness ) >> 8;
+			const uint8_t b1 				= ( b * wipeBrightness ) >> 8;
+			
+			led.led->setPixelColor(p, r1, g1, b1);
+		}
+		
+		led.led->show();
+
+		// increment the pixel we color each time through
+		led.ledCounter++;
+		// reset the timer
+		led.ledElapsed_ms = 0;	
+	}
+}
+
+// Wipe a color around the strips with a fading trail behind the active LED
+// Backward Direction
+void wipeChaseBackwardFull( Led & led, const uint32_t & color, uint8_t wait_ms )
+{
+	if( led.ledElapsed_ms >= wait_ms )
+	{		
+		const uint8_t numPixels = led.led->numPixels();
+		const uint8_t r = color >> 16 & 0xFF;
+		const uint8_t g = color >> 8  & 0xFF;
+		const uint8_t b = color       & 0xFF;
+		
+		if( led.ledCounter >= numPixels )
+			led.ledCounter = 0;
+		
+		led.led->clear();
+		
+		const uint8_t startPixel = led.ledCounter;
+		
+		for( uint8_t i = 0; i < WIPE_CHASE_FULL_LENGTH; i++ )
+		{
+			const uint8_t p 				= (startPixel+i) % numPixels;
+			const uint8_t wipeBrightness 	= wipeBackwardFull_value[i];;
+		
+			const uint8_t r1 				= ( r * wipeBrightness ) >> 8;
+			const uint8_t g1 				= ( g * wipeBrightness ) >> 8;
+			const uint8_t b1 				= ( b * wipeBrightness ) >> 8;
+			
+			led.led->setPixelColor(p, r1, g1, b1);
+		}
+		
+		led.led->show();
+					
+		// increment the pixel we color each time through
+		if( led.ledCounter == 0 )
+			led.ledCounter = numPixels-1;
+		else
+			led.ledCounter--;
+		
+		// reset the timer
+		led.ledElapsed_ms = 0;	
+	}
+}
+
 // state machine for LED control
 void handleLed(Led & led)
 {
@@ -406,6 +507,46 @@ void handleLed(Led & led)
 			wipeChaseBackward( led, led.color_new, 200 / LED_COUNT_INNER_RING );
 			break;				
 		
+		/**** Wipe Chase Full Forward ****/
+		case 70:
+			wipeChaseForwardFull( led, led.color_new, 2000 / LED_COUNT_INNER_RING );
+			break;			
+		case 71:
+			wipeChaseForwardFull( led, led.color_new, 1500 / LED_COUNT_INNER_RING );
+			break;
+		case 72:
+			wipeChaseForwardFull( led, led.color_new, 1000 / LED_COUNT_INNER_RING );
+			break;	
+		case 73:
+			wipeChaseForwardFull( led, led.color_new, 750 / LED_COUNT_INNER_RING );
+			break;
+		case 74:
+			wipeChaseForwardFull( led, led.color_new, 500 / LED_COUNT_INNER_RING );
+			break;
+		case 75:
+			wipeChaseForwardFull( led, led.color_new, 200 / LED_COUNT_INNER_RING );
+			break;
+			
+		/**** Wipe Chase Full Backward ****/
+		case 80:
+			wipeChaseBackwardFull( led, led.color_new, 2000 / LED_COUNT_INNER_RING );
+			break;
+		case 81:
+			wipeChaseBackwardFull( led, led.color_new, 1500 / LED_COUNT_INNER_RING );
+			break;
+		case 82:
+			wipeChaseBackwardFull( led, led.color_new, 1000 / LED_COUNT_INNER_RING );
+			break;	
+		case 83:
+			wipeChaseBackwardFull( led, led.color_new, 750 / LED_COUNT_INNER_RING );
+			break;	
+		case 84:
+			wipeChaseBackwardFull( led, led.color_new, 500 / LED_COUNT_INNER_RING );
+			break;	
+		case 85:
+			wipeChaseBackwardFull( led, led.color_new, 200 / LED_COUNT_INNER_RING );
+			break;	
+			
 		/**** Default ****/
 		default:
 			clearLeds(led);
