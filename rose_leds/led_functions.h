@@ -352,7 +352,7 @@ void wipeChaseForwardFull( Led & led, const uint32_t & color, uint8_t wait_ms )
 		for( uint8_t i = 0; i < WIPE_CHASE_FULL_LENGTH; i++ )
 		{
 			const uint8_t p 				= (startPixel+i) % numPixels;
-			const uint8_t wipeBrightness 	= wipeBackwardFull_value[i];;
+			const uint8_t wipeBrightness 	= wipeForwardFull_value[i];;
 			
 			const uint8_t r1 				= ( r * wipeBrightness ) >> 8;
 			const uint8_t g1 				= ( g * wipeBrightness ) >> 8;
