@@ -21,6 +21,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+// Require this to run on a Leonardo
+#ifndef ARDUINO_AVR_UNO
+#error "ROSE LED requires an Uno to run on"
+#endif
+
 #define ROSE_DEBUG 
 #undef ROSE_DEBUG // comment this out to enable debug
 
