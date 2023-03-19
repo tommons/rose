@@ -27,7 +27,7 @@
 #endif
 
 #define ROSE_DEBUG 
-#undef ROSE_DEBUG // comment this out to enable debug
+//#undef ROSE_DEBUG // comment this out to enable debug
 
 #include "dmx.h"
 #include "button.h"

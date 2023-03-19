@@ -101,7 +101,7 @@ uint32_t dmx_debug_counter = 0;
 bool allow_dmxI2C 					= false;
 bool suspend_dmxI2C 				= false;
 
-void sendDMXI2C()
+void sendDMXI2C(bool force)
 {
 #ifdef ROSE_DEBUG
   if( dmx_control_changed )
@@ -110,7 +110,7 @@ void sendDMXI2C()
 	
 	if( allow_dmxI2C )
 	{
-    if( dmx_control_changed )
+    if( dmx_control_changed || force )
     {
       // Print for debug
       #ifdef ROSE_DEBUG
@@ -278,56 +278,56 @@ void handleDMX()
     #endif 
   
     dmx_elapsed_ms = 0;
-    
-    // Read our values of interest from the DMX bus
-    dmx_control1_value 	= DMXSerial.read(dmx_control1_channel_num);		
-    dmx_led1_r_value 		= DMXSerial.read(dmx_led1_r_channel_num);
-    dmx_led1_g_value 		= DMXSerial.read(dmx_led1_g_channel_num);
-    dmx_led1_b_value 		= DMXSerial.read(dmx_led1_b_channel_num);
-    dmx_control2_value 	= DMXSerial.read(dmx_control2_channel_num);				
-    dmx_led2_r_value 		= DMXSerial.read(dmx_led2_r_channel_num);
-    dmx_led2_g_value 		= DMXSerial.read(dmx_led2_g_channel_num);
-    dmx_led2_b_value 		= DMXSerial.read(dmx_led2_b_channel_num);
-    dmx_servo_value  		= DMXSerial.read(dmx_servo_channel_num);
-
-    if( prev_dmx_control1_value != dmx_control1_value ||
-        prev_dmx_led1_r_value 	!= dmx_led1_r_value ||
-        prev_dmx_led1_g_value 	!= dmx_led1_g_value ||
-        prev_dmx_led1_b_value 	!= dmx_led1_b_value ||
-        prev_dmx_control2_value	!= dmx_control2_value || 
-        prev_dmx_led2_r_value 	!= dmx_led2_r_value ||
-        prev_dmx_led2_g_value 	!= dmx_led2_g_value ||
-        prev_dmx_led2_b_value 	!= dmx_led2_b_value ||
-        prev_dmx_servo_value  	!= dmx_servo_value )
-    {
-      dmx_control_changed = true;
-    }
-    else
-    {
-      dmx_control_changed = false;
-    }
-
-    #ifdef ROSE_DEBUG
-    if( dmx_control_changed )
-      Serial.println(F("Got DMX Update:"));
-    #endif
-    
+       
     // send the dmx data over i2c
     // control is suspected when manual buttons are pressed
     if( !suspend_dmxI2C )
     {
-      sendDMXI2C();
-    }
+      // Read our values of interest from the DMX bus
+      dmx_control1_value 	= DMXSerial.read(dmx_control1_channel_num);		
+      dmx_led1_r_value 		= DMXSerial.read(dmx_led1_r_channel_num);
+      dmx_led1_g_value 		= DMXSerial.read(dmx_led1_g_channel_num);
+      dmx_led1_b_value 		= DMXSerial.read(dmx_led1_b_channel_num);
+      dmx_control2_value 	= DMXSerial.read(dmx_control2_channel_num);				
+      dmx_led2_r_value 		= DMXSerial.read(dmx_led2_r_channel_num);
+      dmx_led2_g_value 		= DMXSerial.read(dmx_led2_g_channel_num);
+      dmx_led2_b_value 		= DMXSerial.read(dmx_led2_b_channel_num);
+      dmx_servo_value  		= DMXSerial.read(dmx_servo_channel_num);
+
+      if( prev_dmx_control1_value != dmx_control1_value ||
+          prev_dmx_led1_r_value 	!= dmx_led1_r_value ||
+          prev_dmx_led1_g_value 	!= dmx_led1_g_value ||
+          prev_dmx_led1_b_value 	!= dmx_led1_b_value ||
+          prev_dmx_control2_value	!= dmx_control2_value || 
+          prev_dmx_led2_r_value 	!= dmx_led2_r_value ||
+          prev_dmx_led2_g_value 	!= dmx_led2_g_value ||
+          prev_dmx_led2_b_value 	!= dmx_led2_b_value ||
+          prev_dmx_servo_value  	!= dmx_servo_value )
+      {
+        dmx_control_changed = true;
+      }
+      else
+      {
+        dmx_control_changed = false;
+      }
+
+      #ifdef ROSE_DEBUG
+      if( dmx_control_changed )
+        Serial.println(F("Got DMX Update:"));
+      #endif
     
-    prev_dmx_control1_value = dmx_control1_value;
-    prev_dmx_led1_r_value 	= dmx_led1_r_value;
-    prev_dmx_led1_g_value 	= dmx_led1_g_value;
-    prev_dmx_led1_b_value 	= dmx_led1_b_value;
-    prev_dmx_control2_value	= dmx_control2_value;
-    prev_dmx_led2_r_value 	= dmx_led2_r_value;
-    prev_dmx_led2_g_value 	= dmx_led2_g_value;
-    prev_dmx_led2_b_value 	= dmx_led2_b_value;
-    prev_dmx_servo_value  	= dmx_servo_value;
+      sendDMXI2C(false);
+    
+      prev_dmx_control1_value = dmx_control1_value;
+      prev_dmx_led1_r_value 	= dmx_led1_r_value;
+      prev_dmx_led1_g_value 	= dmx_led1_g_value;
+      prev_dmx_led1_b_value 	= dmx_led1_b_value;
+      prev_dmx_control2_value	= dmx_control2_value;
+      prev_dmx_led2_r_value 	= dmx_led2_r_value;
+      prev_dmx_led2_g_value 	= dmx_led2_g_value;
+      prev_dmx_led2_b_value 	= dmx_led2_b_value;
+      prev_dmx_servo_value  	= dmx_servo_value;
+    }
   }
 }
 

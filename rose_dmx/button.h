@@ -111,7 +111,7 @@ void handleButton()
 			dmx_servo_value += 32;
 
 			elapsedButton_petal_ms = 0;
-			sendDMXI2C();
+			sendDMXI2C(true);
 
 			if( dmx_servo_value >= 128 )
 				dmx_servo_value = 0;     
@@ -175,7 +175,7 @@ void handleButton()
 			}
 			
 			elapsedButton_led_ms = 0;
-			sendDMXI2C();
+			sendDMXI2C(true);
 		}	
 
 		// backdoor long button pushes to override dmx address
