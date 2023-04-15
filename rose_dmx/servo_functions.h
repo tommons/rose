@@ -38,18 +38,22 @@
 // 20230319 - reduced drop angle to 30 from 50 to reduce stress on magnet/string connection.  petal 4 magnet detached at rental to Peru HS
 #define SERVO_PETAL_DROP_ANGLE_DELTA 	30  // how far the servo travels to pull the magnet
 #define SERVO_PETAL_HOLD_ANGLE_CCW  	120
-#define SERVO_PETAL_HOLD_ANGLE_CW  		50
+#define SERVO_PETAL_HOLD_ANGLE_CW  		31
 
 #define NUM_SERVOS 4
 // Setup servo hold and drop angles based on whether it rotates CW or CCW
+const uint8_t SERVO_PETAL_DROP_ANGLE_DELTAS[NUM_SERVOS] = { 35, 
+													                                  30, 
+												   	                                -30, 
+													                                  -30 };
 const uint8_t SERVO_PETAL_HOLD_ANGLES[NUM_SERVOS] = { SERVO_PETAL_HOLD_ANGLE_CW, 
-													  SERVO_PETAL_HOLD_ANGLE_CW, 
-												   	  SERVO_PETAL_HOLD_ANGLE_CCW, 
-													  SERVO_PETAL_HOLD_ANGLE_CCW };
-const uint8_t SERVO_PETAL_DROP_ANGLES[NUM_SERVOS] = { SERVO_PETAL_HOLD_ANGLE_CW  + SERVO_PETAL_DROP_ANGLE_DELTA, 
-													  SERVO_PETAL_HOLD_ANGLE_CW  + SERVO_PETAL_DROP_ANGLE_DELTA, 
-													  SERVO_PETAL_HOLD_ANGLE_CCW - SERVO_PETAL_DROP_ANGLE_DELTA, 
-													  SERVO_PETAL_HOLD_ANGLE_CCW - SERVO_PETAL_DROP_ANGLE_DELTA };
+													                            SERVO_PETAL_HOLD_ANGLE_CW, 
+												   	                          SERVO_PETAL_HOLD_ANGLE_CCW, 
+													                            SERVO_PETAL_HOLD_ANGLE_CCW };
+const uint8_t SERVO_PETAL_DROP_ANGLES[NUM_SERVOS] = { SERVO_PETAL_HOLD_ANGLE_CW  + SERVO_PETAL_DROP_ANGLE_DELTAS[0], 
+													                            SERVO_PETAL_HOLD_ANGLE_CW  + SERVO_PETAL_DROP_ANGLE_DELTAS[1], 
+													                            SERVO_PETAL_HOLD_ANGLE_CCW + SERVO_PETAL_DROP_ANGLE_DELTAS[2], 
+													                            SERVO_PETAL_HOLD_ANGLE_CCW + SERVO_PETAL_DROP_ANGLE_DELTAS[3] };
 
 // Mapping of petal number to servo number
 #define SERVO_PETAL_1 0

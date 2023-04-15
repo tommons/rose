@@ -27,7 +27,10 @@
 #endif
 
 #define ROSE_DEBUG 
-//#undef ROSE_DEBUG // comment this out to enable debug
+#undef ROSE_DEBUG // comment this out to enable debug
+
+#define ROSE_DMX_SERVO_DEBUG_CONTROL
+#undef ROSE_DMX_SERVO_DEBUG_CONTROL // comment this out to enable debug control of servos
 
 #include "dmx.h"
 #include "button.h"

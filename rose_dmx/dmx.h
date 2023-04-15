@@ -57,6 +57,9 @@
 #define DMX_LED2_B_CHANNEL_OFFSET 		7
 #define DMX_SERVO_CHANNEL_OFFSET 		  8
 
+#define DMX_CONTROL1_SERVO_OVERRIDE_VALUE  250
+
+
 elapsedMillis dmx_elapsed_ms;
 elapsedMillis dmx_debug_elapsed_ms;
 
@@ -141,6 +144,20 @@ void sendDMXI2C(bool force)
       Wire.write(dmx_servo_value); 
       Wire.endTransmission();    // stop transmitting
 
+      #ifdef ROSE_DMX_SERVO_DEBUG_CONTROL
+      if( dmx_control1_value == DMX_CONTROL1_SERVO_OVERRIDE_VALUE )
+      {
+        uint8_t angle = map( dmx_led1_r_value, 0, 255, SERVO_MIN_ANGLE, SERVO_MAX_ANGLE );
+        setServo( SERVO_PETAL_1, angle );
+        angle = map( dmx_led1_g_value, 0, 255, SERVO_MIN_ANGLE, SERVO_MAX_ANGLE );
+        setServo( SERVO_PETAL_2, angle );
+        angle = map( dmx_led1_b_value, 0, 255, SERVO_MIN_ANGLE, SERVO_MAX_ANGLE );
+        setServo( SERVO_PETAL_3, angle );
+        angle = map( dmx_led2_r_value, 0, 255, SERVO_MIN_ANGLE, SERVO_MAX_ANGLE );
+        setServo( SERVO_PETAL_4, angle ); 
+      }
+      #endif
+      
       // servo state happens in this arduino
       // set servo state
       servoState = dmx_servo_value;      
