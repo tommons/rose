@@ -43,9 +43,9 @@
 #define NUM_SERVOS 4
 // Setup servo hold and drop angles based on whether it rotates CW or CCW
 const uint8_t SERVO_PETAL_DROP_ANGLE_DELTAS[NUM_SERVOS] = { 35, 
-													                                  30, 
+													                                  27, 
 												   	                                -30, 
-													                                  -30 };
+													                                  -40 };
 const uint8_t SERVO_PETAL_HOLD_ANGLES[NUM_SERVOS] = { SERVO_PETAL_HOLD_ANGLE_CW, 
 													                            SERVO_PETAL_HOLD_ANGLE_CW, 
 												   	                          SERVO_PETAL_HOLD_ANGLE_CCW, 
